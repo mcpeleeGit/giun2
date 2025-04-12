@@ -42,7 +42,7 @@ jobs:
             112.175.185.146
             # ftp username
           username:
-            giun
+            giun2
             # ftp password
           password:
             ${{ secrets.FTP_PASSWORD }}
