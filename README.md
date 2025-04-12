@@ -41,13 +41,6 @@ php -S localhost:8000
 
 ---
 
-## 🔐 MySQL 연동 설정
-
-- Host: `localhost`
-- Port: `3306`
-- Database: `homepage`
-- User: `root`
-- Password: `test123`
 
 ### 📄 DB 테이블 생성
 
