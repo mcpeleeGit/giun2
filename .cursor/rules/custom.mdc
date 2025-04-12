@@ -1,0 +1,44 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# 프로젝트 구조
+project-root/
+├── public/                  ← 웹 루트 (DocumentRoot, 도메인 연결 폴더)
+│   ├── index.php            ← 엔트리 포인트
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── main.css
+│   │   ├── js/
+│   │   │   └── main.js
+│   │   └── images/
+│   │       └── logo.png
+│   ├── pages/               ← HTML 템플릿 뷰 역할
+│   │   ├── home.php
+│   │   ├── about.php
+│   │   └── contact.php
+│   ├── layouts/             ← 공통 레이아웃
+│   │   ├── header.php
+│   │   └── footer.php
+│   ├── components/          ← 재사용 가능한 UI 블록
+│   │   ├── product-card.php
+│   │   └── carousel.php
+│   └── .htaccess            ← Rewrite to index.php (optional)
+├── app/                     ← 백엔드 MVC 구조
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   └── Requests/
+│   ├── Services/
+│   ├── Repositories/
+│   ├── Models/
+│   └── Views/               ← public/pages 대신 View 파일 두는 경우
+├── routes/
+│   └── web.php              ← 라우팅 정의
+├── config/
+├── tests/
+├── storage/
+├── vendor/
+└── composer.json
+

@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+{
+  "name": "sql-only-in-repository",
+  "description": "Direct SQL statements should only appear in Repository classes.",
+  "language": "php",
+  "severity": "error",
+  "patterns": [
+    {
+      "pattern": ".*",
+      "where": "in_file",
+      "filters": [
+        {
+          "type": "path_matches",
+          "regex": "app/(?!Repositories/).*\\.php"
+        },
+        {
+          "type": "contains",
+          "regex": "(DB::|->query\\(|->prepare\\()"
+        }
+      ],
+      "message": "SQL logic is only allowed in Repository classes."
+    }
+  ]
+}

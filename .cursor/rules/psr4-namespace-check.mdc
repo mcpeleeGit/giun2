@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+{
+  "name": "psr4-namespace-check",
+  "description": "Ensure namespace matches PSR-4 structure.",
+  "language": "php",
+  "severity": "warning",
+  "patterns": [
+    {
+      "pattern": "namespace App\\\\$DIR$;",
+      "filters": [
+        {
+          "type": "file_path_not_matches",
+          "regex": "app/$DIR$/.*\\.php"
+        }
+      ],
+      "message": "Namespace does not match PSR-4 path. Expected app/{namespace}/..."
+    }
+  ]
+}

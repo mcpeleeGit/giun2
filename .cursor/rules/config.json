@@ -1,0 +1,74 @@
+{
+    "rules": [
+      {
+        "name": "page-must-include-header-footer",
+        "description": "Each page under public/pages/ must include both header.php and footer.php.",
+        "language": "php",
+        "severity": "error",
+        "filePattern": "public/pages/.*\\.php",
+        "requiredPatterns": [
+          "include.+layouts/header\\.php",
+          "include.+layouts/footer\\.php"
+        ],
+        "message": "Page must include both layouts/header.php and layouts/footer.php."
+      },
+      {
+        "name": "component-should-be-included",
+        "description": "Component files must be used somewhere in pages or layouts via include or require.",
+        "language": "php",
+        "severity": "warning",
+        "filePattern": "public/components/(.*)\\.php",
+        "requiredBy": [
+          "public/pages/.*\\.php",
+          "public/layouts/.*\\.php"
+        ],
+        "message": "Component appears unused. Consider including or deleting it."
+      },
+      {
+        "name": "assets-must-be-in-assets-dir",
+        "description": "All CSS/JS/image files must be placed under public/assets/.",
+        "language": "php",
+        "severity": "error",
+        "patterns": [
+          {
+            "pattern": ".*",
+            "where": "in_file",
+            "filters": [
+              {
+                "type": "contains",
+                "regex": "(href=|src=)[\"'](?!\\/assets\\/|assets\\/)"
+              }
+            ],
+            "message": "Static assets should be located in /assets/ directory."
+          }
+        ]
+      },
+      {
+        "name": "index-should-not-include-ui",
+        "description": "index.php should only route pages, not include direct HTML or UI.",
+        "language": "php",
+        "severity": "error",
+        "filePattern": "public/index.php",
+        "forbiddenPatterns": [
+          "<h[1-6]>.*<\\/h[1-6]>",
+          "<div.*?>.*<\\/div>"
+        ],
+        "message": "Avoid placing HTML directly in index.php. Use layouts and pages instead."
+      }
+    ],
+    "autoAttachFilePatterns": [
+      {
+        "name": "php-frontend-file-matcher",
+        "description": "When editing a page, auto-open header, footer, and relevant JS/CSS.",
+        "language": "php",
+        "match": "public/pages/(.*)\\.php",
+        "autoAttach": [
+          "public/layouts/header.php",
+          "public/layouts/footer.php",
+          "public/assets/css/main.css",
+          "public/assets/js/main.js"
+        ]
+      }
+    ]
+  }
+  

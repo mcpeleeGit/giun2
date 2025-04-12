@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+{
+  "name": "must-have-test-for-service",
+  "description": "Each Service class must have a corresponding unit test.",
+  "language": "php",
+  "severity": "warning",
+  "filePattern": "app/Services/(.*)Service\\.php",
+  "requiredFiles": [
+    "tests/Unit/\\1ServiceTest.php"
+  ],
+  "message": "Missing test file for Service: tests/Unit/{name}ServiceTest.php"
+}

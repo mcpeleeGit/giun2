@@ -1,0 +1,30 @@
+# 환경 설정 파일
+config.ini
+
+# Composer 디렉토리
+/vendor/
+
+/composer.lock
+
+# 캐시 및 로그 파일
+*.log
+*.cache
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# IDE 설정 파일
+.idea/
+/*.iml
+
+# PHPStorm
+/.idea/
+/*.iml
+/out/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
