@@ -1,5 +1,35 @@
+<?php
+$user = unserialize($_SESSION['user']);
+?>
+
 <section>
     <h2>게시물 관리</h2>
+    
+    <!-- 게시물 등록 버튼 -->
+    <div class="register-button-div">
+        <button id="openModal">등록</button>
+    </div>
+
+    <!-- 모달 창 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="postForm" action="/admin/posts/create" method="post">
+                <input type="hidden" id="id" name="id">
+                <label for="title">제목:</label>
+                <input type="text" id="title" name="title" required>
+                
+                <label for="author">작성자:</label>
+                <input type="text" id="author" name="author" value="<?= htmlspecialchars($user->name ?? '') ?>" readonly>
+                
+                <label for="content">내용:</label>
+                <textarea id="content" name="content" rows="4" required></textarea>
+                
+                <button type="submit" id="submitButton">등록</button>
+            </form>
+        </div>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -7,6 +37,7 @@
                 <th>제목</th>
                 <th>작성자</th>
                 <th>작성일</th>
+                <th>삭제</th>
             </tr>
         </thead>
         <tbody>
@@ -16,25 +47,63 @@
                     <td><?= htmlspecialchars($post->title) ?></td>
                     <td><?= htmlspecialchars($post->author) ?></td>
                     <td><?= htmlspecialchars($post->created_at) ?></td>
+                    <td>
+                        <form action="/admin/posts/delete" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="<?= htmlspecialchars($post->id) ?>">
+                            <button type="submit" onclick="return confirm('정말로 이 게시물을 삭제하시겠습니까?');">삭제</button>
+                        </form>
+                    </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </section>
 
-<style>
-table {
-    width: 100%;
-    border-collapse: collapse;
+<script type="module">
+
+
+document.getElementById('openModal').onclick = function() {
+    document.getElementById('modal').style.display = 'block';
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+document.querySelector('.close').onclick = function() {
+    document.getElementById('modal').style.display = 'none';
 }
 
-th {
-    background-color: #f2f2f2;
+window.onclick = function(event) {
+    if (event.target == document.getElementById('modal')) {
+        document.getElementById('modal').style.display = 'none';
+    }
 }
-</style> 
+
+document.querySelectorAll('tbody tr').forEach(row => {
+    row.onclick = function() {
+        // 모달을 띄우고, 선택한 게시물의 정보를 모달에 채웁니다.
+        document.getElementById('modal').style.display = 'block';
+        const cells = this.children;
+        const postId = cells[0].textContent;
+
+        try {
+            fetchApi(`/api/blog/${postId}`).then(data => {
+                document.getElementById('id').value = data.id;
+                document.getElementById('title').value = data.title;
+                document.getElementById('author').value = data.author;
+                document.getElementById('content').value = data.content;
+                document.getElementById('submitButton').textContent = '수정';
+                document.getElementById('postForm').action = '/admin/posts/update';
+            });
+        } catch (error) {
+            console.error('게시물 조회 중 오류 발생:', error);
+        }
+    };
+});
+
+// 모달이 열릴 때마다 폼 액션과 버튼 텍스트를 초기화
+function openModal() {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('submitButton').textContent = '등록';
+    document.getElementById('postForm').action = '/admin/posts/create';
+}
+
+document.getElementById('openModal').onclick = openModal;
+</script> 

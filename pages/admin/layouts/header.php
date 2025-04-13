@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>관리자 페이지</title>
     <link rel="stylesheet" href="/assets/css/admin-style.css">
+    <script src="/assets/js/common.js"></script>
 </head>
 <body>
 <header>
