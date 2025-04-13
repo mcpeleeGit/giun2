@@ -22,6 +22,7 @@ Thumbs.db
 /.idea/
 /*.iml
 /out/
+/assets/uploads/
 
 # MacOS
 .DS_Store
