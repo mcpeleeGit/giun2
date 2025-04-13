@@ -28,3 +28,6 @@ Thumbs.db
 
 # Windows
 Thumbs.db
+
+# 오류 로그
+php_error.log

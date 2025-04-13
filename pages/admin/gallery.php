@@ -16,6 +16,7 @@ $galleryItems = $galleryItems ?? [];
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="galleryForm" action="/admin/gallery/create" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="id" name="id">
                 <label for="title">제목:</label>
                 <input type="text" id="title" name="title" required>
 
@@ -28,7 +29,7 @@ $galleryItems = $galleryItems ?? [];
                 <label for="author">작성자:</label>
                 <input type="text" id="author" name="author" value="<?= htmlspecialchars($user->name ?? '') ?>" readonly>
 
-                <button type="submit">등록</button>
+                <button type="submit" id="submitButton">등록</button>
             </form>
         </div>
     </div>
@@ -41,6 +42,7 @@ $galleryItems = $galleryItems ?? [];
                 <p><?= htmlspecialchars($item->description) ?></p>
                 <p><strong>작성자:</strong> <?= htmlspecialchars($item->author) ?></p>
                 <p><strong>작성일:</strong> <?= htmlspecialchars($item->created_at) ?></p>
+                <button class="edit-button" data-id="<?= $item->id ?>">수정</button>
             </div>
         <?php endforeach; ?>
     </div>
@@ -108,9 +110,8 @@ $galleryItems = $galleryItems ?? [];
 </style>
 
 <script>
-document.getElementById('openModal').onclick = function() {
-    document.getElementById('modal').style.display = 'block';
-}
+
+document.getElementById('openModal').onclick = openModal;
 
 document.querySelector('.close').onclick = function() {
     document.getElementById('modal').style.display = 'none';
@@ -121,4 +122,31 @@ window.onclick = function(event) {
         document.getElementById('modal').style.display = 'none';
     }
 }
+
+document.querySelectorAll('.edit-button').forEach(button => {
+    button.onclick = async function() {
+        const itemId = this.getAttribute('data-id');
+        try {
+            const data = await fetchApi(`/api/gallery/${itemId}`);
+            document.getElementById('id').value = data.id;
+            document.getElementById('title').value = data.title;
+            document.getElementById('description').value = data.description;
+            document.getElementById('author').value = data.author;
+            document.getElementById('galleryForm').action = '/admin/gallery/update';
+            document.getElementById('submitButton').textContent = '수정';
+            document.getElementById('modal').style.display = 'block';
+        } catch (error) {
+            console.error('갤러리 항목 조회 중 오류 발생:', error);
+        }
+    }
+});
+
+function openModal() {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('submitButton').textContent = '등록';
+    document.getElementById('galleryForm').action = '/admin/gallery/create';
+}
+
+document.getElementById('openModal').onclick = openModal;
+
 </script>

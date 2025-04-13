@@ -12,6 +12,10 @@ class RegisterController
         $this->registerService = new RegisterService(); // ✅ 생성자에서 생성
     }
 
+    public function register() { 
+        view('register'); 
+    }
+
     public function submit()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

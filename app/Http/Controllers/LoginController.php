@@ -12,6 +12,11 @@ class LoginController {
         $this->loginService = new LoginService(); // ✅ 생성자에서 생성
     }
 
+
+    public function login() { 
+        view('login'); 
+    }
+
     public function authenticate() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = $_POST['email'] ?? '';
