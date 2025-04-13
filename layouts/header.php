@@ -2,8 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나의 멋진 홈페이지</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="icon" href="/assets/images/favicon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/assets/images/favicon.png" type="image/x-icon">    
+<?php include "layouts/seo.php"; ?>
 </head>
 <body>
 <header>

@@ -45,4 +45,9 @@ class UserRepository extends Repository {
 
         return $users;
     }
+
+    public function delete($userId) {
+        $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = ?");
+        return $stmt->execute([$userId]);
+    }
 }

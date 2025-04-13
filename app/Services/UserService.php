@@ -15,4 +15,9 @@ class UserService {
         // 모든 사용자 목록을 가져옵니다.
         return $this->userRepository->findAll();
     }
+
+    public function deleteUser($userId) {
+        // 사용자 삭제
+        return $this->userRepository->delete($userId);
+    }
 }

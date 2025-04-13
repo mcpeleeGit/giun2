@@ -23,6 +23,7 @@ Router::get('/admin', [AdminHomeController::class, 'index']);
 
 use App\Http\AdminControllers\UserController as AdminUserController;
 Router::get('/admin/users', [AdminUserController::class, 'index']);
+Router::post('/admin/users/delete', [AdminUserController::class, 'delete']);
 
 use App\Http\AdminControllers\BlogController as AdminBlogController;
 Router::get('/admin/posts', [AdminBlogController::class, 'index']);

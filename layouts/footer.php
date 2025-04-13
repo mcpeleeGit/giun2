@@ -1,7 +1,7 @@
 
 </main>
 <footer>
-    <p>&copy; 2025 나의 멋진 홈페이지</p>
+    <p>&copy; 2025 소셜 자동화 도구</p>
 </footer>
 </body>
 </html>
