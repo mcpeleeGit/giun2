@@ -1,1 +1,0 @@
-<section><h2>썸네일 갤러리</h2><div class='gallery'><div class='card'><img src='https://via.placeholder.com/150'><p>이미지 1</p></div><div class='card'><img src='https://via.placeholder.com/150'><p>이미지 2</p></div></div></section>

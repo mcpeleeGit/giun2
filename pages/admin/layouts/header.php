@@ -11,7 +11,8 @@
     <nav>
         <a href="/admin">대시보드</a>
         <a href="/admin/users">사용자 관리</a>
-        <a href="/admin/posts">게시물 관리</a>
+        <a href="/admin/posts">블로그 관리</a>
+        <a href="/admin/gallery">갤러리 관리</a>
         <a href="/logout">로그아웃</a>
     </nav>
 </header>
