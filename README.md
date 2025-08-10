@@ -1,6 +1,6 @@
 # 🌐 PHP Styled Homepage
 
-MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으로 구성된 경량 PHP 홈페이지입니다.
+MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으로 구성된 경량 PHP 홈페이지입니다.1
 
 ---
 
@@ -31,7 +31,7 @@ MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으
 
 ---
 
-## 🚀 실행 방법
+## 🚀 실행 방법1
 
 ```bash
 php -S localhost:8000
@@ -42,7 +42,7 @@ php -S localhost:8000
 ---
 
 
-### 📄 DB 테이블 생성
+### 📄 DB 테이블 생성1
 
 ```sql
 CREATE DATABASE IF NOT EXISTS homepage CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## ⚙️ 향후 발전 방향
+## ⚙️ 향후 발전 방향1
 
 - 로그인 기능 (세션)
 - 유효성 검증 클래스 분리 (Request 계층)
@@ -94,13 +94,13 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## 📌 만든 이유
+## 📌 만든 이유1
 
 > 아주 가볍게 시작할 수 있는 구조지만,
 > MVC와 서비스 계층 분리, MySQL 연동, 오토로딩 등 실전적인 PHP 구조 학습을 위한 구조입니다.
 
 ---
 
-## 🤝 License
+## 🤝 License1
 
 MIT
