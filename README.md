@@ -1,6 +1,6 @@
 # 🌐 PHP Styled Homepage
 
-MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으로 구성된 경량 PHP 홈페이지입니다.
+MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으로 구성된 경량 PHP 홈페이지입니다.1
 
 ---
 
