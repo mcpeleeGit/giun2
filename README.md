@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## ⚙️ 향후 발전 방향
+## ⚙️ 향후 발전 방향1
 
 - 로그인 기능 (세션)
 - 유효성 검증 클래스 분리 (Request 계층)
