@@ -101,6 +101,6 @@ CREATE TABLE IF NOT EXISTS users (
 
 ---
 
-## 🤝 License
+## 🤝 License1
 
 MIT
