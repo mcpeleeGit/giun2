@@ -42,7 +42,7 @@ php -S localhost:8000
 ---
 
 
-### 📄 DB 테이블 생성
+### 📄 DB 테이블 생성1
 
 ```sql
 CREATE DATABASE IF NOT EXISTS homepage CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
