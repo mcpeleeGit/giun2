@@ -31,7 +31,7 @@ MVC 구조 + Service 계층 + MySQL 연동 + 간단한 오토로딩 시스템으
 
 ---
 
-## 🚀 실행 방법
+## 🚀 실행 방법1
 
 ```bash
 php -S localhost:8000
