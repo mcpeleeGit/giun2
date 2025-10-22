@@ -1,7 +1,8 @@
-
 </main>
-<footer>
-    <p>&copy; 2025 소셜 자동화 도구</p>
+<footer class="site-footer">
+    <div class="container">
+        <p>&copy; <?= date('Y'); ?> MyLife Hub. 나만의 공간을 함께 만들어가요.</p>
+    </div>
 </footer>
 </body>
 </html>
