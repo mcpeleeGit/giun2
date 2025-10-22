@@ -9,8 +9,10 @@ class Router {
         $scriptName = dirname($_SERVER['SCRIPT_NAME']);
         if ($scriptName !== '/') $uri = substr($uri, strlen($scriptName));
 
+        $routes = self::$routes[$method] ?? [];
+
         // 정규 표현식을 사용하여 경로 매칭
-        foreach (self::$routes[$method] as $path => $action) {
+        foreach ($routes as $path => $action) {
             $pattern = preg_replace('#\{[a-zA-Z0-9_]+\}#', '([a-zA-Z0-9_]+)', $path);
             if (preg_match('#^' . $pattern . '$#', $uri, $matches)) {
                 array_shift($matches); // 첫 번째 매칭은 전체 문자열이므로 제거
