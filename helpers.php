@@ -1,6 +1,48 @@
 <?php
 use App\Models\Seo;
+use App\Models\User;
 use App\Repositories\SeoRepository;
+
+function current_user(): ?User {
+    if (!isset($_SESSION['user'])) {
+        return null;
+    }
+
+    $user = @unserialize($_SESSION['user'], ['allowed_classes' => [User::class]]);
+
+    return $user instanceof User ? $user : null;
+}
+
+function require_login(): User {
+    $user = current_user();
+
+    if (!$user) {
+        flash('auth_notice', '로그인이 필요한 서비스입니다. 먼저 로그인해 주세요.');
+        redirect('/login');
+    }
+
+    return $user;
+}
+
+function redirect(string $url): void {
+    header('Location: ' . $url);
+    exit;
+}
+
+function flash(string $key, ?string $value = null): ?string {
+    if ($value !== null) {
+        $_SESSION['flash'][$key] = $value;
+        return null;
+    }
+
+    if (isset($_SESSION['flash'][$key])) {
+        $message = $_SESSION['flash'][$key];
+        unset($_SESSION['flash'][$key]);
+        return $message;
+    }
+
+    return null;
+}
 
 function view($name, $data = []) {
     extract($data);
