@@ -13,24 +13,37 @@ class LoginController {
     }
 
 
-    public function login() { 
-        view('login'); 
+    public function login() {
+        view('login', [
+            'error' => flash('auth_error'),
+            'notice' => flash('auth_notice'),
+        ]);
     }
 
     public function authenticate() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
+            $email = trim($_POST['email'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+
+            if ($email === '' || $password === '') {
+                flash('auth_error', '이메일과 비밀번호를 모두 입력해 주세요.');
+                redirect('/login');
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                flash('auth_error', '유효한 이메일 주소인지 다시 확인해 주세요.');
+                redirect('/login');
+            }
 
             $user = $this->loginService->login($email, $password);
 
             if ($user) {
-                session_start();
                 $_SESSION['user'] = serialize($user); // User 객체를 직렬화하여 세션에 저장
-                header("Location: /");
-                exit;
+                flash('mypage_notice', $user->name . '님, 환영합니다! 오늘의 계획을 완성해 볼까요?');
+                redirect('/mypage');
             } else {
-                echo "<p>로그인 실패. 이메일 또는 비밀번호를 확인하세요.</p>";
+                flash('auth_error', '이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해 주세요.');
+                redirect('/login');
             }
         }
     }
