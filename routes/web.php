@@ -22,6 +22,8 @@ Router::post('/board/{id}/update', [BoardController::class, 'update']);
 Router::post('/board/{id}/delete', [BoardController::class, 'delete']);
 
 Router::get('/mypage', [MyPageController::class, 'index']);
+Router::post('/mypage/update', [MyPageController::class, 'update']);
+Router::post('/mypage/delete', [MyPageController::class, 'delete']);
 
 Router::get('/register', [RegisterController::class, 'register']);
 Router::post('/register', [RegisterController::class, 'submit']);
