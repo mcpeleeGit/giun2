@@ -1,6 +1,4 @@
-<?php
-$user = unserialize($_SESSION['user']);
-?>
+<?php $user = current_user(); ?>
 
 <section>
     <h2>게시물 관리</h2>
@@ -15,6 +13,7 @@ $user = unserialize($_SESSION['user']);
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="postForm" action="/admin/posts/create" method="post">
+                <?= csrf_field(); ?>
                 <input type="hidden" id="id" name="id">
                 <label for="title">제목:</label>
                 <input type="text" id="title" name="title" required>
@@ -49,12 +48,18 @@ $user = unserialize($_SESSION['user']);
                     <td><?= htmlspecialchars($post->created_at) ?></td>
                     <td>
                         <form action="/admin/posts/delete" method="post" style="display:inline;">
+                            <?= csrf_field(); ?>
                             <input type="hidden" name="id" value="<?= htmlspecialchars($post->id) ?>">
                             <button type="submit" onclick="return confirm('정말로 이 게시물을 삭제하시겠습니까?');">삭제</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <?php if (empty($posts ?? [])): ?>
+                <tr>
+                    <td colspan="5">등록된 게시물이 없습니다.</td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </section>
@@ -77,30 +82,34 @@ window.onclick = function(event) {
 }
 
 document.querySelectorAll('tbody tr').forEach(row => {
-    row.onclick = function() {
-        // 모달을 띄우고, 선택한 게시물의 정보를 모달에 채웁니다.
-        document.getElementById('modal').style.display = 'block';
-        const cells = this.children;
-        const postId = cells[0].textContent;
+    row.addEventListener('click', event => {
+        if (event.target.closest('button')) {
+            return;
+        }
 
-        try {
-            fetchApi(`/api/blog/${postId}`).then(data => {
+        document.getElementById('modal').style.display = 'block';
+        const postId = row.children[0].textContent.trim();
+
+        fetchApi(`/api/blog/${postId}`)
+            .then(data => {
                 document.getElementById('id').value = data.id;
                 document.getElementById('title').value = data.title;
                 document.getElementById('author').value = data.author;
                 document.getElementById('content').value = data.content;
                 document.getElementById('submitButton').textContent = '수정';
                 document.getElementById('postForm').action = '/admin/posts/update';
+            })
+            .catch(error => {
+                console.error('게시물 조회 중 오류 발생:', error);
             });
-        } catch (error) {
-            console.error('게시물 조회 중 오류 발생:', error);
-        }
-    };
+    });
 });
 
 // 모달이 열릴 때마다 폼 액션과 버튼 텍스트를 초기화
 function openModal() {
     document.getElementById('modal').style.display = 'block';
+    document.getElementById('postForm').reset();
+    document.getElementById('id').value = '';
     document.getElementById('submitButton').textContent = '등록';
     document.getElementById('postForm').action = '/admin/posts/create';
 }

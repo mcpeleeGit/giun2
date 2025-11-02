@@ -1,5 +1,5 @@
 <?php
-$user = unserialize($_SESSION['user']);
+$user = current_user();
 
 // 갤러리 항목 목록을 가져옵니다.
 $galleryItems = $galleryItems ?? [];
@@ -16,7 +16,8 @@ $galleryItems = $galleryItems ?? [];
         <div class="modal-content">
             <span class="close">&times;</span>
             <form id="galleryForm" action="/admin/gallery/create" method="post" enctype="multipart/form-data">
-            <input type="hidden" id="id" name="id">
+                <?= csrf_field(); ?>
+                <input type="hidden" id="id" name="id">
                 <label for="title">제목:</label>
                 <input type="text" id="title" name="title" required>
 
@@ -46,6 +47,9 @@ $galleryItems = $galleryItems ?? [];
             </div>
         <?php endforeach; ?>
     </div>
+    <?php if (empty($galleryItems)): ?>
+        <p class="empty-state">등록된 갤러리 항목이 없습니다.</p>
+    <?php endif; ?>
 </section>
 
 <style>
@@ -132,6 +136,8 @@ document.querySelectorAll('.edit-button').forEach(button => {
             document.getElementById('title').value = data.title;
             document.getElementById('description').value = data.description;
             document.getElementById('author').value = data.author;
+            document.getElementById('image').required = false;
+            document.getElementById('image').value = '';
             document.getElementById('galleryForm').action = '/admin/gallery/update';
             document.getElementById('submitButton').textContent = '수정';
             document.getElementById('modal').style.display = 'block';
@@ -143,8 +149,12 @@ document.querySelectorAll('.edit-button').forEach(button => {
 
 function openModal() {
     document.getElementById('modal').style.display = 'block';
+    document.getElementById('galleryForm').reset();
+    document.getElementById('id').value = '';
     document.getElementById('submitButton').textContent = '등록';
     document.getElementById('galleryForm').action = '/admin/gallery/create';
+    document.getElementById('image').required = true;
+    document.getElementById('image').value = '';
 }
 
 document.getElementById('openModal').onclick = openModal;

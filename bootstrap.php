@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\User;
+
 // 공통 초기화
 session_start();
 
@@ -14,22 +17,41 @@ spl_autoload_register(function ($class) {
     $prefix = 'App\\';
     $base_dir = __DIR__ . '/app/';
     $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) return;
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+
     $relative_class = substr($class, $len);
     $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-    if (file_exists($file)) require_once $file;
+    if (file_exists($file)) {
+        require_once $file;
+    }
 });
 
+function currentAdminUser(): ?User
+{
+    if (!isset($_SESSION['user'])) {
+        return null;
+    }
+
+    $user = @unserialize($_SESSION['user'], ['allowed_classes' => [User::class]]);
+
+    return $user instanceof User ? $user : null;
+}
+
 // 관리자 권한 확인 함수
-function checkAdminAccess() {
-    if (!isset($_SESSION['user']) || unserialize($_SESSION['user'])->role !== 'ADMIN') {
-        header("Location: /login");
+function checkAdminAccess(): void
+{
+    $user = currentAdminUser();
+
+    if (!$user || ($user->role ?? null) !== 'ADMIN') {
+        header('Location: /login');
         exit;
     }
 }
 
 // AdminControllers 호출 시 권한 확인
-$uri = $_SERVER['REQUEST_URI'];
+$uri = $_SERVER['REQUEST_URI'] ?? '';
 if (strpos($uri, '/admin') === 0) {
     checkAdminAccess();
 }

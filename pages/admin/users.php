@@ -21,12 +21,18 @@
                     <td><?= htmlspecialchars($user->created_at) ?></td>
                     <td>
                         <form action="/admin/users/delete" method="post" style="display:inline;">
+                            <?= csrf_field(); ?>
                             <input type="hidden" name="user_id" value="<?= htmlspecialchars($user->id) ?>">
                             <button type="submit" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
                         </form>
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <?php if (empty($users ?? [])): ?>
+                <tr>
+                    <td colspan="6">등록된 사용자가 없습니다.</td>
+                </tr>
+            <?php endif; ?>
         </tbody>
     </table>
 </section>

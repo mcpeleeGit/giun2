@@ -38,7 +38,12 @@ class LoginController {
             $user = $this->loginService->login($email, $password);
 
             if ($user) {
+                session_regenerate_id(true);
                 $_SESSION['user'] = serialize($user); // User 객체를 직렬화하여 세션에 저장
+                if (($user->role ?? null) === 'ADMIN') {
+                    flash('admin_notice', $user->name . '님, 안전한 관리자 페이지에 접속했습니다.');
+                    redirect('/admin');
+                }
                 flash('mypage_notice', $user->name . '님, 환영합니다! 오늘의 계획을 완성해 볼까요?');
                 redirect('/mypage');
             } else {
