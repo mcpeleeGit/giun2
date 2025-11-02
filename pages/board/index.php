@@ -26,12 +26,39 @@
 
         <?php if (!empty($posts)): ?>
             <?php foreach ($posts as $post): ?>
+                <?php
+                    $isOwner = $currentUser && (int)$currentUser->id === (int)$post->user_id;
+                    $editTarget = 'board-' . $post->id;
+                ?>
                 <article class="board-post">
                     <header>
                         <h3><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?></h3>
-                        <div class="meta">작성자 <?= htmlspecialchars($post->user_name, ENT_QUOTES, 'UTF-8'); ?> · <?= date('Y.m.d H:i', strtotime($post->created_at)); ?></div>
+                        <div class="meta">
+                            작성자 <?= htmlspecialchars($post->user_name, ENT_QUOTES, 'UTF-8'); ?> · <?= date('Y.m.d H:i', strtotime($post->created_at)); ?>
+                            <?php if (!empty($post->updated_at) && $post->updated_at !== $post->created_at): ?>
+                                <span class="meta-updated">(수정 <?= date('Y.m.d H:i', strtotime($post->updated_at)); ?>)</span>
+                            <?php endif; ?>
+                        </div>
                     </header>
-                    <div><?= nl2br(htmlspecialchars($post->content, ENT_QUOTES, 'UTF-8')); ?></div>
+                    <div class="board-post-content"><?= nl2br(htmlspecialchars($post->content, ENT_QUOTES, 'UTF-8')); ?></div>
+                    <?php if ($isOwner): ?>
+                        <div class="board-post-actions">
+                            <button type="button" class="link-button" data-edit-toggle="<?= $editTarget; ?>">수정</button>
+                            <form method="POST" action="/board/<?= $post->id; ?>/delete" onsubmit="return confirm('정말 삭제하시겠어요?');">
+                                <button type="submit" class="link-button danger">삭제</button>
+                            </form>
+                        </div>
+                        <form method="POST" action="/board/<?= $post->id; ?>/update" class="board-edit-form" data-edit-form="<?= $editTarget; ?>" hidden>
+                            <label class="sr-only" for="board-title-<?= $post->id; ?>">게시글 제목 수정</label>
+                            <input id="board-title-<?= $post->id; ?>" type="text" name="title" value="<?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?>" required>
+                            <label class="sr-only" for="board-content-<?= $post->id; ?>">게시글 내용 수정</label>
+                            <textarea id="board-content-<?= $post->id; ?>" name="content" rows="6" required><?= htmlspecialchars($post->content, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                            <div class="board-edit-actions">
+                                <button type="submit" class="btn btn-primary">저장</button>
+                                <button type="button" class="btn btn-ghost" data-edit-cancel="<?= $editTarget; ?>">취소</button>
+                            </div>
+                        </form>
+                    <?php endif; ?>
                 </article>
             <?php endforeach; ?>
         <?php else: ?>
@@ -39,3 +66,36 @@
         <?php endif; ?>
     </div>
 </section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-edit-toggle]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = button.getAttribute('data-edit-toggle');
+                var form = document.querySelector('[data-edit-form="' + target + '"]');
+
+                if (form) {
+                    form.hidden = false;
+                    var input = form.querySelector('input, textarea');
+                    if (input) {
+                        input.focus();
+                        if (input.setSelectionRange) {
+                            var length = input.value.length;
+                            input.setSelectionRange(length, length);
+                        }
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-edit-cancel]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = button.getAttribute('data-edit-cancel');
+                var form = document.querySelector('[data-edit-form="' + target + '"]');
+
+                if (form) {
+                    form.hidden = true;
+                }
+            });
+        });
+    });
+</script>

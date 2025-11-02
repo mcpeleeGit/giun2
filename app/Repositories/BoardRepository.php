@@ -58,6 +58,24 @@ class BoardRepository extends Repository
         }, false);
     }
 
+    public function update(int $postId, int $userId, string $title, string $content): bool
+    {
+        return $this->withTableRetry(function () use ($postId, $userId, $title, $content) {
+            $stmt = $this->pdo->prepare('UPDATE board_posts SET title = ?, content = ?, updated_at = NOW() WHERE id = ? AND user_id = ?');
+            $stmt->execute([$title, $content, $postId, $userId]);
+            return $stmt->rowCount() > 0;
+        }, false);
+    }
+
+    public function delete(int $postId, int $userId): bool
+    {
+        return $this->withTableRetry(function () use ($postId, $userId) {
+            $stmt = $this->pdo->prepare('DELETE FROM board_posts WHERE id = ? AND user_id = ?');
+            $stmt->execute([$postId, $userId]);
+            return $stmt->rowCount() > 0;
+        }, false);
+    }
+
     private function hydratePost(array $row): BoardPost
     {
         $post = new BoardPost();

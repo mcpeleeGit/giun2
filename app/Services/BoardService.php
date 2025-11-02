@@ -32,4 +32,14 @@ class BoardService
     {
         return $this->boardRepository->create($userId, $title, $content);
     }
+
+    public function updatePost(int $postId, int $userId, string $title, string $content): bool
+    {
+        return $this->boardRepository->update($postId, $userId, $title, $content);
+    }
+
+    public function deletePost(int $postId, int $userId): bool
+    {
+        return $this->boardRepository->delete($postId, $userId);
+    }
 }

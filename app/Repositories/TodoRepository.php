@@ -58,6 +58,15 @@ class TodoRepository extends Repository
         }, false);
     }
 
+    public function update(int $todoId, int $userId, string $title): bool
+    {
+        return $this->withTableRetry(function () use ($todoId, $userId, $title) {
+            $stmt = $this->pdo->prepare('UPDATE todos SET title = ?, updated_at = NOW() WHERE id = ? AND user_id = ?');
+            $stmt->execute([$title, $todoId, $userId]);
+            return $stmt->rowCount() > 0;
+        }, false);
+    }
+
     public function toggle(int $todoId, int $userId): bool
     {
         return $this->withTableRetry(function () use ($todoId, $userId) {
