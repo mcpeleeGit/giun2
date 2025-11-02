@@ -2,129 +2,161 @@
 
 namespace App\Services;
 
-use App\Repositories\GalleryRepository;
 use App\Models\Gallery;
+use App\Repositories\GalleryRepository;
+use finfo;
 
-class GalleryService {
-    protected $galleryRepository;
+class GalleryService
+{
+    private const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-    public function __construct() {
+    protected GalleryRepository $galleryRepository;
+
+    public function __construct()
+    {
         $this->galleryRepository = new GalleryRepository();
     }
 
-    public function getAll() {
+    public function getAll()
+    {
         return $this->galleryRepository->getAll();
     }
 
-    public function getById($id) {
+    public function getById($id)
+    {
         return $this->galleryRepository->getById($id);
     }
 
-    public function createItem($gallery, $image) {
+    public function createItem(Gallery $gallery, ?array $image): bool
+    {
+        if (!$this->validateGallery($gallery) || !$this->validateImage($image, true)) {
+            return false;
+        }
 
-        if (!$this->validateImage($image)) {
-            exit;
-        }
-        if (!$this->validateGallery($gallery)) {
-            exit; 
-        }
         $imagePath = $this->uploadImage($image);
-        if (!$imagePath) {
-            exit;
+        if ($imagePath === null) {
+            return false;
         }
+
         $gallery->image_path = $imagePath;
-        
+
         return $this->galleryRepository->create($gallery);
     }
 
-    public function update($gallery, $image) {
+    public function update(Gallery $gallery, ?array $image): bool
+    {
+        if ($gallery->id === null || !$this->validateGallery($gallery)) {
+            return false;
+        }
 
-        if (!$this->validateId($gallery)) {
-            exit;
+        $existing = $this->galleryRepository->getById($gallery->id);
+        if (!$existing) {
+            return false;
         }
-        if (!$this->validateImage($image)) {
-            exit;
+
+        $gallery->image_path = $existing->image_path;
+
+        if ($image && ($image['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            if (!$this->validateImage($image, true)) {
+                return false;
+            }
+
+            $imagePath = $this->uploadImage($image);
+            if ($imagePath === null) {
+                return false;
+            }
+
+            $gallery->image_path = $imagePath;
         }
-        if (!$this->validateGallery($gallery)) {
-            exit; 
-        }
-        $imagePath = $this->uploadImage($image);
-        if (!$imagePath) {
-            exit;
-        }
-        $gallery->image_path = $imagePath;
 
         return $this->galleryRepository->update($gallery);
     }
 
-    private function uploadImage($image) {
-        $uploadDir = '/assets/uploads/gallery/';
-        $uploadPath = $_SERVER['DOCUMENT_ROOT'] . $uploadDir;
+    private function uploadImage(array $image): ?string
+    {
+        $extension = strtolower(pathinfo($image['name'] ?? '', PATHINFO_EXTENSION));
+        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+            return null;
+        }
 
-        if (!is_dir($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
+        $uploadDir = '/assets/uploads/gallery';
+        $documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2), '/');
+        $uploadPath = $documentRoot . $uploadDir;
+
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
+            error_log('❌ 업로드 디렉터리를 생성할 수 없습니다: ' . $uploadPath);
+            return null;
         }
 
         if (!is_writable($uploadPath)) {
-            echo "❌ 업로드 경로에 쓰기 권한이 없습니다.";
+            error_log('❌ 업로드 경로에 쓰기 권한이 없습니다: ' . $uploadPath);
+            return null;
         }
 
-        $timestamp = time();
-        $fileExtension = pathinfo($image['name'], PATHINFO_EXTENSION);
-        $fileName = $timestamp . '.' . $fileExtension;
-        $filePath = $uploadPath . $fileName;
-        
-        if (move_uploaded_file($image['tmp_name'], $filePath)) {
-            return $uploadDir . $fileName;
-        } else {
-            echo "<h2>이미지 업로드에 실패했습니다.</h2>";
-            return false;
-        }        
+        try {
+            $filename = time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+        } catch (\Exception $e) {
+            error_log('❌ 파일명을 생성할 수 없습니다: ' . $e->getMessage());
+            return null;
+        }
+        $destination = $uploadPath . '/' . $filename;
+
+        if (!move_uploaded_file($image['tmp_name'], $destination)) {
+            error_log('❌ 이미지 업로드에 실패했습니다.');
+            return null;
+        }
+
+        return $uploadDir . '/' . $filename;
     }
 
-    private function validateImage($image) {
-        if ($image['error'] !== UPLOAD_ERR_OK) {
-            switch ($image['error']) {
-                case UPLOAD_ERR_INI_SIZE:
-                case UPLOAD_ERR_FORM_SIZE:
-                    echo "<h2>파일이 너무 큽니다.</h2>";
-                    return false;
-                case UPLOAD_ERR_PARTIAL:
-                    echo "<h2>파일이 부분적으로만 업로드되었습니다.</h2>";
-                    return false;
-                case UPLOAD_ERR_NO_FILE:
-                    echo "<h2>파일이 업로드되지 않았습니다.</h2>";
-                    return false;
-                case UPLOAD_ERR_NO_TMP_DIR:
-                    echo "<h2>임시 폴더가 없습니다.</h2>";
-                    return false;
-                case UPLOAD_ERR_CANT_WRITE:
-                    echo "<h2>디스크에 파일을 쓸 수 없습니다.</h2>";
-                    return false;
-                case UPLOAD_ERR_EXTENSION:
-                    echo "<h2>확장에 의해 파일 업로드가 중지되었습니다.</h2>";
-                    return false;
-                default:
-                    echo "<h2>알 수 없는 오류가 발생했습니다.</h2>";
-                    return false;
-            }
+    private function validateImage(?array $image, bool $required = false): bool
+    {
+        if ($image === null || ($image['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return !$required;
         }
+
+        if (($image['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            return false;
+        }
+
+        if (($image['size'] ?? 0) > self::MAX_IMAGE_SIZE) {
+            return false;
+        }
+
+        $tmpName = $image['tmp_name'] ?? '';
+        if (!is_uploaded_file($tmpName)) {
+            return false;
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($tmpName);
+        if ($mimeType === false || !in_array($mimeType, self::ALLOWED_MIME_TYPES, true)) {
+            return false;
+        }
+
         return true;
     }
 
-    private function validateGallery($gallery) {
-        if (!$gallery->title || !$gallery->author) {
-            echo "<h2>모든 필드를 입력해야 합니다.</h2>";
-            return false;
-        }
-        return true;
-    }
+    private function validateGallery(Gallery $gallery): bool
+    {
+        $gallery->title = trim($gallery->title ?? '');
+        $gallery->author = trim($gallery->author ?? '');
+        $gallery->description = trim($gallery->description ?? '');
 
-    private function validateId($gallery) {
-        if (!$gallery->id) {
-            echo "<h2>ID가 없습니다.</h2>";
+        if ($gallery->title === '' || mb_strlen($gallery->title) > 120) {
             return false;
         }
+
+        if ($gallery->author === '' || mb_strlen($gallery->author) > 80) {
+            return false;
+        }
+
+        if (mb_strlen($gallery->description) > 1000) {
+            $gallery->description = mb_substr($gallery->description, 0, 1000);
+        }
+
         return true;
     }
-} 
+}

@@ -50,7 +50,7 @@ class UserRepository extends Repository {
     }
 
     public function findAll() {
-        $stmt = $this->pdo->query("SELECT * FROM users");
+        $stmt = $this->pdo->query("SELECT * FROM users ORDER BY created_at DESC");
         $usersData = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         $users = [];
 
