@@ -12,11 +12,14 @@ Router::get('/', [HomeController::class, 'home']);
 
 Router::get('/todo', [TodoController::class, 'index']);
 Router::post('/todo', [TodoController::class, 'store']);
+Router::post('/todo/{id}/update', [TodoController::class, 'update']);
 Router::post('/todo/{id}/toggle', [TodoController::class, 'toggle']);
 Router::post('/todo/{id}/delete', [TodoController::class, 'delete']);
 
 Router::get('/board', [BoardController::class, 'index']);
 Router::post('/board', [BoardController::class, 'store']);
+Router::post('/board/{id}/update', [BoardController::class, 'update']);
+Router::post('/board/{id}/delete', [BoardController::class, 'delete']);
 
 Router::get('/mypage', [MyPageController::class, 'index']);
 

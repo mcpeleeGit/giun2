@@ -28,6 +28,11 @@ class TodoService
         return $this->todoRepository->create($userId, $title);
     }
 
+    public function updateTodo(int $todoId, int $userId, string $title): bool
+    {
+        return $this->todoRepository->update($todoId, $userId, $title);
+    }
+
     public function toggleTodo(int $todoId, int $userId): bool
     {
         return $this->todoRepository->toggle($todoId, $userId);

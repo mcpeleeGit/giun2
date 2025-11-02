@@ -48,6 +48,26 @@ class TodoController
         redirect('/todo');
     }
 
+    public function update($todoId)
+    {
+        $user = require_login();
+
+        $title = trim($_POST['title'] ?? '');
+
+        if ($title === '') {
+            flash('todo_error', '수정할 내용을 입력해 주세요.');
+            redirect('/todo');
+        }
+
+        if ($this->todoService->updateTodo((int)$todoId, $user->id, $title)) {
+            flash('todo_message', '할 일이 수정되었습니다.');
+        } else {
+            flash('todo_error', '요청하신 할 일을 수정할 수 없습니다.');
+        }
+
+        redirect('/todo');
+    }
+
     public function toggle($todoId)
     {
         $user = require_login();

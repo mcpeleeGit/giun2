@@ -9,4 +9,5 @@ class Todo
     public $title;
     public $is_completed;
     public $created_at;
+    public $updated_at;
 }

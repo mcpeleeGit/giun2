@@ -25,19 +25,31 @@
                 <?php if (!empty($todos)): ?>
                     <ul class="todo-list">
                         <?php foreach ($todos as $todo): ?>
+                            <?php $editTarget = 'todo-' . $todo->id; ?>
                             <li class="todo-item <?= $todo->is_completed ? 'completed' : ''; ?>">
-                                <div>
-                                    <div class="todo-title"><?= htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8'); ?></div>
-                                    <div class="todo-meta">작성일 <?= date('Y.m.d H:i', strtotime($todo->created_at)); ?></div>
+                                <div class="todo-content">
+                                    <div>
+                                        <div class="todo-title"><?= htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="todo-meta">작성일 <?= date('Y.m.d H:i', strtotime($todo->created_at)); ?></div>
+                                    </div>
+                                    <div class="todo-actions">
+                                        <button type="button" class="link-button" data-edit-toggle="<?= $editTarget; ?>">수정</button>
+                                        <form method="POST" action="/todo/<?= $todo->id; ?>/toggle">
+                                            <button type="submit" class="link-button"><?= $todo->is_completed ? '되돌리기' : '완료하기'; ?></button>
+                                        </form>
+                                        <form method="POST" action="/todo/<?= $todo->id; ?>/delete" onsubmit="return confirm('정말 삭제하시겠어요?');">
+                                            <button type="submit" class="link-button danger">삭제</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <div class="todo-actions">
-                                    <form method="POST" action="/todo/<?= $todo->id; ?>/toggle">
-                                        <button type="submit" class="link-button"><?= $todo->is_completed ? '되돌리기' : '완료하기'; ?></button>
-                                    </form>
-                                    <form method="POST" action="/todo/<?= $todo->id; ?>/delete" onsubmit="return confirm('정말 삭제하시겠어요?');">
-                                        <button type="submit" class="link-button danger">삭제</button>
-                                    </form>
-                                </div>
+                                <form method="POST" action="/todo/<?= $todo->id; ?>/update" class="todo-edit-form" data-edit-form="<?= $editTarget; ?>" hidden>
+                                    <label class="sr-only" for="todo-title-<?= $todo->id; ?>">할 일 내용 수정</label>
+                                    <input id="todo-title-<?= $todo->id; ?>" type="text" name="title" value="<?= htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8'); ?>" required>
+                                    <div class="todo-edit-actions">
+                                        <button type="submit" class="btn btn-primary">저장</button>
+                                        <button type="button" class="btn btn-ghost" data-edit-cancel="<?= $editTarget; ?>">취소</button>
+                                    </div>
+                                </form>
                             </li>
                         <?php endforeach; ?>
                     </ul>
@@ -48,3 +60,36 @@
         <?php endif; ?>
     </div>
 </section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-edit-toggle]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = button.getAttribute('data-edit-toggle');
+                var form = document.querySelector('[data-edit-form="' + target + '"]');
+
+                if (form) {
+                    form.hidden = false;
+                    var input = form.querySelector('input, textarea');
+                    if (input) {
+                        input.focus();
+                        if (input.setSelectionRange) {
+                            var length = input.value.length;
+                            input.setSelectionRange(length, length);
+                        }
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-edit-cancel]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var target = button.getAttribute('data-edit-cancel');
+                var form = document.querySelector('[data-edit-form="' + target + '"]');
+
+                if (form) {
+                    form.hidden = true;
+                }
+            });
+        });
+    });
+</script>
