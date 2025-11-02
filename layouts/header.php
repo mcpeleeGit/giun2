@@ -21,6 +21,10 @@
             ['href' => '/board', 'label' => '회원 게시판'],
         ];
         if ($currentUser) {
+            if (($currentUser->role ?? null) === 'ADMIN') {
+                $navItems[] = ['href' => '/admin', 'label' => '관리자 페이지'];
+            }
+
             $navItems[] = ['href' => '/mypage', 'label' => '마이페이지'];
         }
 
