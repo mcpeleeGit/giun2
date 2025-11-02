@@ -12,12 +12,27 @@ class UserRepository extends Repository {
 
     public function create($name, $email, $password) {
         try {
-            $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-            return $stmt->execute([$name, $email, $password]);
+            $role = $email === 'admin@googsu.com' ? 'ADMIN' : 'USER';
+            $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+            return $stmt->execute([$name, $email, $password, $role]);
         } catch (\PDOException $e) {
             error_log($e->getMessage());
             return false;
         }
+    }
+
+    public function findById($id) {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($userData) {
+            $this->ensureAdminRole($userData);
+            $user = new User();
+            return $this->mapDataToObject($userData, $user);
+        }
+
+        return null;
     }
 
     public function findByEmail($email) {
@@ -26,6 +41,7 @@ class UserRepository extends Repository {
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($userData) {
+            $this->ensureAdminRole($userData);
             $user = new User();
             return $this->mapDataToObject($userData, $user);
         }
@@ -39,6 +55,7 @@ class UserRepository extends Repository {
         $users = [];
 
         foreach ($usersData as $userData) {
+            $this->ensureAdminRole($userData);
             $user = new User();
             $users[] = $this->mapDataToObject($userData, $user);
         }
@@ -46,8 +63,40 @@ class UserRepository extends Repository {
         return $users;
     }
 
+    public function update($userId, $name, $email, ?string $passwordHash = null) {
+        if ($passwordHash !== null) {
+            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?");
+            $params = [$name, $email, $passwordHash, $userId];
+        } else {
+            $stmt = $this->pdo->prepare("UPDATE users SET name = ?, email = ? WHERE id = ?");
+            $params = [$name, $email, $userId];
+        }
+
+        $updated = $stmt->execute($params);
+
+        if ($updated && $email === 'admin@googsu.com') {
+            $this->updateRole($userId, 'ADMIN');
+        }
+
+        return $updated;
+    }
+
     public function delete($userId) {
         $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = ?");
         return $stmt->execute([$userId]);
+    }
+
+    public function updateRole(int $userId, string $role): bool
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
+        return $stmt->execute([$role, $userId]);
+    }
+
+    private function ensureAdminRole(array &$userData): void
+    {
+        if (($userData['email'] ?? null) === 'admin@googsu.com' && ($userData['role'] ?? null) !== 'ADMIN') {
+            $this->updateRole((int)$userData['id'], 'ADMIN');
+            $userData['role'] = 'ADMIN';
+        }
     }
 }
