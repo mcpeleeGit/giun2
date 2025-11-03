@@ -1,6 +1,6 @@
 # 🌟 MyLife Hub - PHP Personal Homepage
 
-가벼운 MVC 구조와 서비스 계층을 갖춘 PHP 개인 홈페이지 예제입니다. TO-DO 리스트, 회원 게시판, 로그인/회원가입/마이페이지 메뉴를 중심으로 개인 활동을 관리할 수 있습니다.
+가벼운 MVC 구조와 서비스 계층을 갖춘 PHP 개인 홈페이지 예제입니다. TO-DO 리스트, 회원 게시판, 갤러리, 나만의 블로그, 로그인/회원가입/마이페이지 메뉴를 중심으로 개인 활동을 관리할 수 있습니다.
 
 ---
 
@@ -92,6 +92,16 @@ CREATE TABLE IF NOT EXISTS board_posts (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
+  title VARCHAR(200) NOT NULL,
+  author VARCHAR(120) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
 ```
 
 ---
@@ -101,10 +111,11 @@ CREATE TABLE IF NOT EXISTS board_posts (
 | 메뉴 | 설명 |
 |------|------|
 | TO-DO 리스트 | 로그인 후 개인 할 일을 추가·완료·삭제로 관리 |
-| 회원 게시판 | 회원 간 게시글 작성 및 최신 글 확인 |
+| 회원 게시판 & 갤러리 | 회원 간 게시글과 이미지 갤러리를 공유 |
+| 나의 블로그 | 로그인한 사용자만 열람·관리하는 개인 블로그 |
 | 로그인/회원가입 | 이메일 기반 회원 가입 및 인증 |
 | 마이페이지 | 나의 할 일 통계와 최근 게시글/할 일 확인 |
-| 홈 | 주요 메뉴 안내, 최신 게시글/할 일 미리보기 |
+| 홈 | 주요 메뉴 안내, 최신 게시글/할 일/이미지 미리보기 |
 
 ---
 

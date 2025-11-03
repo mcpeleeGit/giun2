@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\AdminControllers\BlogController as AdminBlogController;
+use App\Http\AdminControllers\BoardController as AdminBoardController;
 use App\Http\AdminControllers\GalleryController as AdminGalleryController;
 use App\Http\AdminControllers\HomeController as AdminHomeController;
 use App\Http\AdminControllers\UserController as AdminUserController;
@@ -21,6 +22,15 @@ Router::post('/todo', [TodoController::class, 'store']);
 Router::post('/todo/{id}/update', [TodoController::class, 'update']);
 Router::post('/todo/{id}/toggle', [TodoController::class, 'toggle']);
 Router::post('/todo/{id}/delete', [TodoController::class, 'delete']);
+
+Router::get('/gallery', [GalleryController::class, 'index']);
+Router::get('/gallery/{id}', [GalleryController::class, 'show']);
+
+Router::get('/blog', [BlogController::class, 'index']);
+Router::post('/blog', [BlogController::class, 'store']);
+Router::post('/blog/{id}/update', [BlogController::class, 'update']);
+Router::post('/blog/{id}/delete', [BlogController::class, 'delete']);
+Router::get('/blog/{id}', [BlogController::class, 'show']);
 
 Router::get('/board', [BoardController::class, 'index']);
 Router::post('/board', [BoardController::class, 'store']);
@@ -57,3 +67,5 @@ Router::post('/admin/posts/delete', [AdminBlogController::class, 'delete']);
 Router::get('/admin/gallery', [AdminGalleryController::class, 'index']);
 Router::post('/admin/gallery/create', [AdminGalleryController::class, 'create']);
 Router::post('/admin/gallery/update', [AdminGalleryController::class, 'update']);
+Router::get('/admin/board', [AdminBoardController::class, 'index']);
+Router::post('/admin/board/delete', [AdminBoardController::class, 'delete']);

@@ -76,6 +76,15 @@ class BoardRepository extends Repository
         }, false);
     }
 
+    public function deleteAsAdmin(int $postId): bool
+    {
+        return $this->withTableRetry(function () use ($postId) {
+            $stmt = $this->pdo->prepare('DELETE FROM board_posts WHERE id = ?');
+            $stmt->execute([$postId]);
+            return $stmt->rowCount() > 0;
+        }, false);
+    }
+
     private function hydratePost(array $row): BoardPost
     {
         $post = new BoardPost();
