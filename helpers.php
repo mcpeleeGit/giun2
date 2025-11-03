@@ -48,17 +48,49 @@ function view($name, $data = []) {
     extract($data);
     $seo = getSeo($data['seo'] ?? null);
     $baseDir = __DIR__;
-    include $baseDir . "/layouts/header.php";
-    include $baseDir . "/pages/{$name}.php";
-    include $baseDir . "/layouts/footer.php";
+    $header = $baseDir . '/layouts/header.php';
+    $footer = $baseDir . '/layouts/footer.php';
+    $viewPath = $baseDir . "/pages/{$name}.php";
+    $errorView = $baseDir . '/pages/errors/404.php';
+
+    include $header;
+
+    if (is_file($viewPath)) {
+        include $viewPath;
+    } else {
+        http_response_code(404);
+        if (is_file($errorView)) {
+            include $errorView;
+        } else {
+            echo "<main class=\"container\"><h1>페이지를 찾을 수 없습니다.</h1></main>";
+        }
+    }
+
+    include $footer;
 }
 
 function adminView($name, $data = []) {
     extract($data);
     $baseDir = __DIR__;
-    include $baseDir . "/pages/admin/layouts/header.php";
-    include $baseDir . "/pages/admin/{$name}.php";
-    include $baseDir . "/pages/admin/layouts/footer.php";
+    $header = $baseDir . '/pages/admin/layouts/header.php';
+    $footer = $baseDir . '/pages/admin/layouts/footer.php';
+    $viewPath = $baseDir . "/pages/admin/{$name}.php";
+    $errorView = $baseDir . '/pages/errors/404.php';
+
+    include $header;
+
+    if (is_file($viewPath)) {
+        include $viewPath;
+    } else {
+        http_response_code(404);
+        if (is_file($errorView)) {
+            include $errorView;
+        } else {
+            echo "<main class=\"container\"><h1>페이지를 찾을 수 없습니다.</h1></main>";
+        }
+    }
+
+    include $footer;
 }
 
 function csrf_token(): string
