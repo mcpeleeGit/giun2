@@ -42,4 +42,9 @@ class BoardService
     {
         return $this->boardRepository->delete($postId, $userId);
     }
+
+    public function deletePostAsAdmin(int $postId): bool
+    {
+        return $this->boardRepository->deleteAsAdmin($postId);
+    }
 }

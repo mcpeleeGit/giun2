@@ -19,8 +19,10 @@
             ['href' => '/', 'label' => '홈'],
             ['href' => '/todo', 'label' => 'TO-DO 리스트'],
             ['href' => '/board', 'label' => '회원 게시판'],
+            ['href' => '/gallery', 'label' => '갤러리'],
         ];
         if ($currentUser) {
+            $navItems[] = ['href' => '/blog', 'label' => '나의 블로그'];
             if (($currentUser->role ?? null) === 'ADMIN') {
                 $navItems[] = ['href' => '/admin', 'label' => '관리자 페이지'];
             }

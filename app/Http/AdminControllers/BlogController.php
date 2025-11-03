@@ -42,6 +42,7 @@ class BlogController extends Controller
         $post->title = $title;
         $post->author = $author;
         $post->content = $content;
+        $post->user_id = $this->adminUser->id ?? null;
 
         if (!$this->blogService->createPost($post)) {
             $this->redirectWithError('/admin/posts', '게시물 등록 중 오류가 발생했습니다.');
@@ -68,6 +69,7 @@ class BlogController extends Controller
         $post->title = $title;
         $post->author = $author;
         $post->content = $content;
+        $post->user_id = $this->adminUser->id ?? null;
 
         if (!$this->blogService->updatePost($post)) {
             $this->redirectWithError('/admin/posts', '게시물 수정 중 오류가 발생했습니다.');

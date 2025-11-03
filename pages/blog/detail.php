@@ -1,15 +1,67 @@
 <?php
 if (!$post) {
-    echo "<h2>게시물을 찾을 수 없습니다.</h2>";
-    exit;
+    echo "<section class=\"section\"><div class=\"container\"><p class=\"message message-error\">게시물을 찾을 수 없습니다.</p></div></section>";
+    return;
 }
 ?>
 
-<section>
-    <h2><?= htmlspecialchars($post->title) ?></h2>
-    <p><strong>작성자:</strong> <?= htmlspecialchars($post->author) ?></p>
-    <p><strong>작성일:</strong> <?= htmlspecialchars($post->created_at) ?></p>
-    <div>
-        <?= nl2br(htmlspecialchars($post->content)) ?>
+<section class="section">
+    <div class="container">
+        <article class="surface-card blog-detail">
+            <header>
+                <h2><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?></h2>
+                <dl class="meta">
+                    <div>
+                        <dt>작성자</dt>
+                        <dd><?= htmlspecialchars($post->author ?? '', ENT_QUOTES, 'UTF-8'); ?></dd>
+                    </div>
+                    <div>
+                        <dt>작성일</dt>
+                        <dd><?= htmlspecialchars($post->created_at ?? '', ENT_QUOTES, 'UTF-8'); ?></dd>
+                    </div>
+                </dl>
+            </header>
+            <div class="content">
+                <?= nl2br(htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8')); ?>
+            </div>
+            <footer>
+                <a class="btn btn-ghost" href="/blog">목록으로 돌아가기</a>
+            </footer>
+        </article>
     </div>
 </section>
+
+<style>
+.blog-detail {
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.blog-detail header h2 {
+    margin: 0 0 1rem;
+    font-size: 2rem;
+    color: #111827;
+}
+
+.blog-detail .meta {
+    display: flex;
+    gap: 2rem;
+    margin: 0 0 1.5rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.blog-detail .meta dt {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: #374151;
+}
+
+.blog-detail .content {
+    line-height: 1.8;
+    color: #1f2937;
+    margin-bottom: 2rem;
+    white-space: pre-wrap;
+}
+</style>

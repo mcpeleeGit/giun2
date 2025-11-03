@@ -17,6 +17,11 @@ class BlogService
         return $this->blogRepository->getAll();
     }
 
+    public function getForUser(int $userId, string $authorName): array
+    {
+        return $this->blogRepository->findByUser($userId, $authorName);
+    }
+
     public function getById($id)
     {
         return $this->blogRepository->getById($id);
@@ -32,7 +37,17 @@ class BlogService
         return $this->blogRepository->update($post);
     }
 
+    public function updatePostForUser($post, string $authorName): bool
+    {
+        return $this->blogRepository->updateForUser($post, $authorName);
+    }
+
     public function deletePost($id) {
         return $this->blogRepository->delete($id);
+    }
+
+    public function deletePostForUser(int $id, int $userId, string $authorName): bool
+    {
+        return $this->blogRepository->deleteForUser($id, $userId, $authorName);
     }
 }
