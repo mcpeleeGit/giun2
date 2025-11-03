@@ -47,16 +47,18 @@ function flash(string $key, ?string $value = null): ?string {
 function view($name, $data = []) {
     extract($data);
     $seo = getSeo($data['seo'] ?? null);
-    include "layouts/header.php";
-    include "pages/{$name}.php";
-    include "layouts/footer.php";
+    $baseDir = __DIR__;
+    include $baseDir . "/layouts/header.php";
+    include $baseDir . "/pages/{$name}.php";
+    include $baseDir . "/layouts/footer.php";
 }
 
 function adminView($name, $data = []) {
     extract($data);
-    include "pages/admin/layouts/header.php";
-    include "pages/admin/{$name}.php";
-    include "pages/admin/layouts/footer.php";
+    $baseDir = __DIR__;
+    include $baseDir . "/pages/admin/layouts/header.php";
+    include $baseDir . "/pages/admin/{$name}.php";
+    include $baseDir . "/pages/admin/layouts/footer.php";
 }
 
 function csrf_token(): string
