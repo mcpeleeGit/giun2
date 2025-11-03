@@ -13,11 +13,41 @@ class GalleryController {
     }
 
     public function index() {
-        // 갤러리 항목 목록 가져오기
         $galleryItems = $this->galleryService->getAll();
 
-        // 갤러리 항목 목록을 뷰에 전달
-        view('gallery/index', ['galleryItems' => $galleryItems]);
+        view('gallery/index', [
+            'galleryItems' => $galleryItems,
+            'currentUser' => current_user(),
+            'message' => flash('gallery_message'),
+            'error' => flash('gallery_error'),
+        ]);
+    }
+
+    public function store() {
+        $user = require_login();
+        require_csrf_token($_POST['csrf_token'] ?? null);
+
+        $title = trim($_POST['title'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $image = $_FILES['image'] ?? null;
+
+        if ($title === '' || $image === null || ($image['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            flash('gallery_error', '제목과 이미지를 모두 입력해 주세요.');
+            redirect('/gallery');
+        }
+
+        $gallery = new Gallery();
+        $gallery->title = $title;
+        $gallery->description = $description;
+        $gallery->author = $user->name ?? '익명';
+
+        if (!$this->galleryService->createItem($gallery, $image)) {
+            flash('gallery_error', '이미지를 업로드하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            redirect('/gallery');
+        }
+
+        flash('gallery_message', '새로운 갤러리 이미지가 등록되었습니다!');
+        redirect('/gallery');
     }
 
     public function show($id) {

@@ -24,6 +24,7 @@ Router::post('/todo/{id}/toggle', [TodoController::class, 'toggle']);
 Router::post('/todo/{id}/delete', [TodoController::class, 'delete']);
 
 Router::get('/gallery', [GalleryController::class, 'index']);
+Router::post('/gallery', [GalleryController::class, 'store']);
 Router::get('/gallery/{id}', [GalleryController::class, 'show']);
 
 Router::get('/blog', [BlogController::class, 'index']);
