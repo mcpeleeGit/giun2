@@ -45,11 +45,6 @@ function flash(string $key, ?string $value = null): ?string {
 }
 
 function view($name, $data = []) {
-    // 로깅 시작
-    $log = [];
-    $log[] = "=== view() function called ===";
-    $log[] = "View name: " . $name;
-    
     extract($data);
     $seo = getSeo($data['seo'] ?? null);
     
@@ -58,50 +53,16 @@ function view($name, $data = []) {
     $scriptDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? __FILE__);
     $baseDir = $scriptDir;
     
-    $log[] = "SCRIPT_FILENAME: " . ($_SERVER['SCRIPT_FILENAME'] ?? 'NOT SET');
-    $log[] = "Base directory (calculated): " . $baseDir;
-    $log[] = "__DIR__ (helpers.php location): " . __DIR__;
-    
     $header = $baseDir . '/layouts/header.php';
     $footer = $baseDir . '/layouts/footer.php';
     $viewPath = $baseDir . "/pages/{$name}.php";
     $errorView = $baseDir . '/pages/errors/404.php';
-    
-    $log[] = "View path: " . $viewPath;
-    $log[] = "View file exists: " . (is_file($viewPath) ? 'YES' : 'NO');
-    $log[] = "Header path: " . $header;
-    $log[] = "Header exists: " . (is_file($header) ? 'YES' : 'NO');
-    $log[] = "Footer path: " . $footer;
-    $log[] = "Footer exists: " . (is_file($footer) ? 'YES' : 'NO');
-    
-    // 로그 출력 (HTML 주석)
-    echo "\n<!-- View Debug Log -->\n";
-    echo "<!-- " . implode("\n<!-- ", array_map(function($line) {
-        return htmlspecialchars($line, ENT_QUOTES, 'UTF-8');
-    }, $log)) . " -->\n";
-    echo "<!-- End View Debug Log -->\n";
-    
-    // error_log에도 기록
-    error_log("view() - View name: $name");
-    error_log("view() - View path: $viewPath");
-    error_log("view() - View exists: " . (is_file($viewPath) ? 'YES' : 'NO'));
-
-    if (!is_file($header)) {
-        error_log("view() - ERROR: Header file not found: $header");
-        echo "<!-- ERROR: Header file not found: $header -->\n";
-    }
-    
-    if (!is_file($footer)) {
-        error_log("view() - ERROR: Footer file not found: $footer");
-        echo "<!-- ERROR: Footer file not found: $footer -->\n";
-    }
 
     include $header;
 
     if (is_file($viewPath)) {
         include $viewPath;
     } else {
-        error_log("view() - ERROR: View file not found: $viewPath");
         http_response_code(404);
         if (is_file($errorView)) {
             include $errorView;
