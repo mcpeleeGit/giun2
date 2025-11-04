@@ -94,9 +94,26 @@ class Router {
                 $methodName = $action[1];
                 if (method_exists($controller, $methodName)) {
                     $log[] = "✓ Calling controller method: " . $action[0] . "::" . $methodName;
-                    $result = call_user_func_array([$controller, $methodName], $matches);
-                    if ($result !== null) {
-                        echo $result;
+                    
+                    // 로그를 먼저 출력 (컨트롤러 실행 전)
+                    self::outputLog($log);
+                    
+                    // 컨트롤러 메서드 실행
+                    try {
+                        $result = call_user_func_array([$controller, $methodName], $matches);
+                        if ($result !== null) {
+                            echo $result;
+                        }
+                    } catch (\Exception $e) {
+                        error_log("Router::dispatch() - Exception in controller: " . $e->getMessage());
+                        error_log("Router::dispatch() - Exception trace: " . $e->getTraceAsString());
+                        echo "<!-- Router Exception: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . " -->\n";
+                        throw $e;
+                    } catch (\Error $e) {
+                        error_log("Router::dispatch() - Error in controller: " . $e->getMessage());
+                        error_log("Router::dispatch() - Error trace: " . $e->getTraceAsString());
+                        echo "<!-- Router Error: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . " -->\n";
+                        throw $e;
                     }
                 } else {
                     $log[] = "✗ Method not found: " . $methodName;
@@ -104,14 +121,14 @@ class Router {
                 }
             } elseif (is_callable($action)) {
                 $log[] = "✓ Calling callable";
+                // 로그를 먼저 출력
+                self::outputLog($log);
                 call_user_func_array($action, $matches);
             } else {
                 $log[] = "✗ Invalid route handler";
                 self::show404("Invalid route handler.", $log);
             }
             
-            // 로그 출력
-            self::outputLog($log);
             return;
         }
 
