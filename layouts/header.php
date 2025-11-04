@@ -35,7 +35,20 @@
                 return $normalizedPath === '/';
             }
 
-            return str_starts_with($normalizedPath, $href);
+            $prefixLength = strlen($href);
+            if ($prefixLength === 0) {
+                return false;
+            }
+
+            if (strncmp($normalizedPath, $href, $prefixLength) !== 0) {
+                return false;
+            }
+
+            if (strlen($normalizedPath) === $prefixLength) {
+                return true;
+            }
+
+            return $normalizedPath[$prefixLength] === '/';
         };
         ?>
         <a href="/" class="brand">MyLife Hub</a>
