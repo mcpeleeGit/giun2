@@ -13,14 +13,20 @@ class GalleryController {
     }
 
     public function index() {
+        error_log("GalleryController::index() - START");
+        
         $galleryItems = $this->galleryService->getAll();
-
+        error_log("GalleryController::index() - galleryItems count: " . count($galleryItems));
+        
+        error_log("GalleryController::index() - Calling view('gallery/index', ...)");
         view('gallery/index', [
             'galleryItems' => $galleryItems,
             'currentUser' => current_user(),
             'message' => flash('gallery_message'),
             'error' => flash('gallery_error'),
         ]);
+        
+        error_log("GalleryController::index() - END");
     }
 
     public function store() {
