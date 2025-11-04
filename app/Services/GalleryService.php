@@ -82,8 +82,9 @@ class GalleryService
         }
 
         $uploadDir = '/assets/uploads/gallery';
-        $documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? dirname(__DIR__, 2), '/');
-        $uploadPath = $documentRoot . $uploadDir;
+        // 프로젝트 루트를 기준으로 경로 계산 (index.php가 있는 디렉토리)
+        $projectRoot = dirname(__DIR__, 2);
+        $uploadPath = $projectRoot . $uploadDir;
 
         if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
             error_log('❌ 업로드 디렉터리를 생성할 수 없습니다: ' . $uploadPath);
