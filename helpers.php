@@ -52,8 +52,15 @@ function view($name, $data = []) {
     
     extract($data);
     $seo = getSeo($data['seo'] ?? null);
-    $baseDir = __DIR__;
-    $log[] = "Base directory: " . $baseDir;
+    
+    // index.php가 있는 디렉토리를 기준으로 경로 계산
+    // index.php에서 helpers.php를 로드하므로, index.php의 위치를 기준으로 함
+    $scriptDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? __FILE__);
+    $baseDir = $scriptDir;
+    
+    $log[] = "SCRIPT_FILENAME: " . ($_SERVER['SCRIPT_FILENAME'] ?? 'NOT SET');
+    $log[] = "Base directory (calculated): " . $baseDir;
+    $log[] = "__DIR__ (helpers.php location): " . __DIR__;
     
     $header = $baseDir . '/layouts/header.php';
     $footer = $baseDir . '/layouts/footer.php';
