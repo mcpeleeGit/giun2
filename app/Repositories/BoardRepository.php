@@ -120,6 +120,18 @@ class BoardRepository extends Repository
             return false;
         }
 
+        // Ensure users table exists first for FK constraint
+        $this->pdo->exec(<<<SQL
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                role VARCHAR(20) NOT NULL DEFAULT 'USER',
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        SQL);
+
         $this->pdo->exec(<<<SQL
             CREATE TABLE IF NOT EXISTS board_posts (
                 id INT AUTO_INCREMENT PRIMARY KEY,
