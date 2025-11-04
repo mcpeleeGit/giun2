@@ -13,20 +13,49 @@ class GalleryController {
     }
 
     public function index() {
-        error_log("GalleryController::index() - START");
-        
-        $galleryItems = $this->galleryService->getAll();
-        error_log("GalleryController::index() - galleryItems count: " . count($galleryItems));
-        
-        error_log("GalleryController::index() - Calling view('gallery/index', ...)");
-        view('gallery/index', [
-            'galleryItems' => $galleryItems,
-            'currentUser' => current_user(),
-            'message' => flash('gallery_message'),
-            'error' => flash('gallery_error'),
-        ]);
-        
-        error_log("GalleryController::index() - END");
+        try {
+            error_log("GalleryController::index() - START");
+            echo "<!-- GalleryController::index() - START -->\n";
+            
+            error_log("GalleryController::index() - galleryService type: " . get_class($this->galleryService));
+            echo "<!-- GalleryController::index() - galleryService type: " . get_class($this->galleryService) . " -->\n";
+            
+            error_log("GalleryController::index() - Calling getAll()");
+            echo "<!-- GalleryController::index() - Calling getAll() -->\n";
+            
+            $galleryItems = $this->galleryService->getAll();
+            error_log("GalleryController::index() - galleryItems count: " . count($galleryItems));
+            echo "<!-- GalleryController::index() - galleryItems count: " . count($galleryItems) . " -->\n";
+            
+            error_log("GalleryController::index() - Getting current_user()");
+            echo "<!-- GalleryController::index() - Getting current_user() -->\n";
+            $currentUser = current_user();
+            
+            error_log("GalleryController::index() - Calling view('gallery/index', ...)");
+            echo "<!-- GalleryController::index() - Calling view('gallery/index', ...) -->\n";
+            
+            view('gallery/index', [
+                'galleryItems' => $galleryItems,
+                'currentUser' => $currentUser,
+                'message' => flash('gallery_message'),
+                'error' => flash('gallery_error'),
+            ]);
+            
+            error_log("GalleryController::index() - END");
+            echo "<!-- GalleryController::index() - END -->\n";
+        } catch (\Exception $e) {
+            error_log("GalleryController::index() - EXCEPTION: " . $e->getMessage());
+            error_log("GalleryController::index() - EXCEPTION trace: " . $e->getTraceAsString());
+            echo "<!-- GalleryController::index() - EXCEPTION: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . " -->\n";
+            http_response_code(500);
+            throw $e;
+        } catch (\Error $e) {
+            error_log("GalleryController::index() - ERROR: " . $e->getMessage());
+            error_log("GalleryController::index() - ERROR trace: " . $e->getTraceAsString());
+            echo "<!-- GalleryController::index() - ERROR: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . " -->\n";
+            http_response_code(500);
+            throw $e;
+        }
     }
 
     public function store() {
