@@ -26,6 +26,18 @@ class BlogRepository extends Repository {
         return $posts;
     }
 
+    public function findBetween(string $startDate, string $endDate): array
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM blog_posts WHERE created_at BETWEEN ? AND ? ORDER BY created_at ASC");
+        $stmt->execute([$startDate, $endDate]);
+        $postsData = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        return array_map(function (array $postData) {
+            $post = new Post();
+            return $this->mapDataToObject($postData, $post);
+        }, $postsData);
+    }
+
     public function findByUser(int $userId, string $authorName): array
     {
         if ($this->supportsUserIdColumn()) {
