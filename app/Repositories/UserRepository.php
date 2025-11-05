@@ -10,11 +10,11 @@ class UserRepository extends Repository {
         parent::__construct(); // 부모 클래스의 생성자 호출
     }
 
-    public function create($name, $email, $password) {
+    public function create($name, $email, $password, ?string $kakaoId = null) {
         try {
             $role = $email === 'admin@googsu.com' ? 'ADMIN' : 'USER';
-            $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-            return $stmt->execute([$name, $email, $password, $role]);
+            $stmt = $this->pdo->prepare("INSERT INTO users (name, email, password, role, kakao_id) VALUES (?, ?, ?, ?, ?)");
+            return $stmt->execute([$name, $email, $password, $role, $kakaoId]);
         } catch (\PDOException $e) {
             error_log($e->getMessage());
             return false;
@@ -38,6 +38,21 @@ class UserRepository extends Repository {
     public function findByEmail($email) {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
+        $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if ($userData) {
+            $this->ensureAdminRole($userData);
+            $user = new User();
+            return $this->mapDataToObject($userData, $user);
+        }
+
+        return null;
+    }
+
+    public function findByKakaoId(string $kakaoId): ?User
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM users WHERE kakao_id = ?");
+        $stmt->execute([$kakaoId]);
         $userData = $stmt->fetch(\PDO::FETCH_ASSOC);
 
         if ($userData) {
@@ -90,6 +105,12 @@ class UserRepository extends Repository {
     {
         $stmt = $this->pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
         return $stmt->execute([$role, $userId]);
+    }
+
+    public function updateKakaoId(int $userId, ?string $kakaoId): bool
+    {
+        $stmt = $this->pdo->prepare("UPDATE users SET kakao_id = ? WHERE id = ?");
+        return $stmt->execute([$kakaoId, $userId]);
     }
 
     private function ensureAdminRole(array &$userData): void

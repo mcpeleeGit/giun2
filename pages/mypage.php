@@ -121,6 +121,19 @@
                 </form>
             </div>
 
+            <?php if (!empty($kakaoLoginEnabled)): ?>
+                <div class="card">
+                    <h3>카카오 로그인 연동</h3>
+                    <?php if (!empty($user->kakao_id)): ?>
+                        <p>카카오 계정이 연동되어 있어 비밀번호 없이도 간편하게 로그인할 수 있습니다.</p>
+                        <span class="tag">연동 완료</span>
+                    <?php else: ?>
+                        <p>카카오 계정을 연동하면 이메일과 비밀번호 없이도 로그인할 수 있습니다.</p>
+                        <a href="/auth/kakao/redirect?action=link" class="btn btn-kakao btn-social">카카오 계정 연동하기</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
             <div class="card card-danger">
                 <h3>회원탈퇴</h3>
                 <p>작성한 할 일과 게시글은 함께 삭제됩니다. 정말 탈퇴하시려면 아래 입력란을 작성해 주세요.</p>

@@ -8,5 +8,6 @@ class User
     public $email;
     public $role;
     public $password;
+    public $kakao_id;
     public $created_at;
 }

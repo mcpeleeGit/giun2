@@ -14,6 +14,6 @@ class RegisterService
     public function register($name, $email, $password)
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        return $this->userRepository->create($name, $email, $hash);
+        return $this->userRepository->create($name, $email, $hash, null);
     }
 }

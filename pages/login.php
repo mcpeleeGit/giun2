@@ -17,5 +17,12 @@
             <button type="submit" class="btn btn-primary">로그인</button>
             <p style="text-align:center; color: var(--color-muted);">계정이 없으신가요? <a href="/register" class="link">회원가입하기</a></p>
         </form>
+
+        <?php if (!empty($kakaoLoginEnabled)): ?>
+            <div class="social-login">
+                <p class="social-login__text">또는 카카오 계정으로 빠르게 로그인하세요</p>
+                <a href="/auth/kakao/redirect" class="btn btn-kakao btn-social">카카오로 로그인</a>
+            </div>
+        <?php endif; ?>
     </div>
 </section>

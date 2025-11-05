@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
+  kakao_id VARCHAR(64) UNIQUE NULL,
   role VARCHAR(30) DEFAULT 'USER',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -102,7 +103,23 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- 기존 사용자 테이블에 카카오 로그인 ID 컬럼을 추가하려면 아래 명령을 실행하세요.
+-- ALTER TABLE users ADD COLUMN kakao_id VARCHAR(64) UNIQUE NULL AFTER password;
 ```
+
+### 🔑 카카오 로그인 연동 설정
+
+`config.ini` 파일에 아래와 같이 카카오 애플리케이션 정보를 추가해 주세요. (필요 시 `config.example.ini`를 복사하여 사용합니다.)
+
+```ini
+[kakao]
+rest_api_key = "카카오 REST API 키"
+client_secret = "카카오 클라이언트 시크릿" ; 선택 사항
+redirect_uri = "http://localhost:8000/auth/kakao/callback"
+```
+
+> ⚠️ `redirect_uri` 값은 카카오 개발자 콘솔에 등록한 값과 정확히 일치해야 합니다.
 
 ---
 
