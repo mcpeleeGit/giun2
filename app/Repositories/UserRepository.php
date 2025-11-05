@@ -8,6 +8,7 @@ class UserRepository extends Repository {
 
     public function __construct() {
         parent::__construct(); // 부모 클래스의 생성자 호출
+        $this->ensureKakaoColumnExists();
     }
 
     public function create($name, $email, $password, ?string $kakaoId = null) {
@@ -118,6 +119,20 @@ class UserRepository extends Repository {
         if (($userData['email'] ?? null) === 'admin@googsu.com' && ($userData['role'] ?? null) !== 'ADMIN') {
             $this->updateRole((int)$userData['id'], 'ADMIN');
             $userData['role'] = 'ADMIN';
+        }
+    }
+
+    private function ensureKakaoColumnExists(): void
+    {
+        try {
+            $stmt = $this->pdo->query("SHOW COLUMNS FROM users LIKE 'kakao_id'");
+            $columnExists = $stmt->fetch();
+
+            if (!$columnExists) {
+                $this->pdo->exec("ALTER TABLE users ADD COLUMN kakao_id VARCHAR(64) UNIQUE NULL AFTER password");
+            }
+        } catch (\PDOException $e) {
+            error_log('Failed to ensure kakao_id column exists: ' . $e->getMessage());
         }
     }
 }
