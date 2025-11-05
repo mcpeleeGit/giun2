@@ -15,6 +15,7 @@ use App\Http\Controllers\MyPageController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
+use App\Http\Controllers\KakaoAuthController;
 
 Router::get('/', [HomeController::class, 'home']);
 
@@ -48,6 +49,9 @@ Router::post('/register', [RegisterController::class, 'submit']);
 
 Router::get('/login', [LoginController::class, 'login']);
 Router::post('/login', [LoginController::class, 'authenticate']);
+
+Router::get('/auth/kakao/redirect', [KakaoAuthController::class, 'redirect']);
+Router::get('/auth/kakao/callback', [KakaoAuthController::class, 'callback']);
 
 Router::get('/logout', [LogoutController::class, 'logout']);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\BoardService;
+use App\Services\KakaoService;
 use App\Services\TodoService;
 use App\Services\UserService;
 
@@ -41,6 +42,7 @@ class MyPageController
             'notice' => flash('mypage_notice'),
             'error' => flash('mypage_error'),
             'deleteError' => flash('mypage_delete_error'),
+            'kakaoLoginEnabled' => KakaoService::isConfigured(),
         ]);
     }
 

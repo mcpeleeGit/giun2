@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\KakaoService;
 use App\Services\LoginService;
 
 class LoginController {
@@ -17,6 +18,7 @@ class LoginController {
         view('login', [
             'error' => flash('auth_error'),
             'notice' => flash('auth_notice'),
+            'kakaoLoginEnabled' => KakaoService::isConfigured(),
         ]);
     }
 
