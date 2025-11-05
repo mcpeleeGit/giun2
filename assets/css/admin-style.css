@@ -161,3 +161,41 @@ tr:hover {
     margin-top: 1rem;
     color: #555;
 }
+
+.analytics {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.analytics__header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.analytics__description {
+    color: #666;
+}
+
+.analytics__stats {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.analytics__chart {
+    position: relative;
+    min-height: 320px;
+}
+
+.analytics__chart canvas {
+    position: absolute;
+    inset: 0;
+}
+
+.analytics__grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}

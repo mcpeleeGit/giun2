@@ -15,6 +15,7 @@
         <a href="/admin/posts">블로그 관리</a>
         <a href="/admin/gallery">갤러리 관리</a>
         <a href="/admin/board">회원 게시판 관리</a>
+        <a href="/admin/analytics">접속 통계</a>
         <a href="/logout">로그아웃</a>
     </nav>
 </header>
