@@ -4,6 +4,7 @@ use App\Http\AdminControllers\BlogController as AdminBlogController;
 use App\Http\AdminControllers\BoardController as AdminBoardController;
 use App\Http\AdminControllers\GalleryController as AdminGalleryController;
 use App\Http\AdminControllers\HomeController as AdminHomeController;
+use App\Http\AdminControllers\AccessLogController as AdminAccessLogController;
 use App\Http\AdminControllers\UserController as AdminUserController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\GalleryController;
@@ -56,6 +57,7 @@ Router::get('/api/gallery/{id}', [GalleryController::class, 'getById']);
 
 // 관리자 페이지
 Router::get('/admin', [AdminHomeController::class, 'index']);
+Router::get('/admin/analytics', [AdminAccessLogController::class, 'index']);
 
 Router::get('/admin/users', [AdminUserController::class, 'index']);
 Router::post('/admin/users/delete', [AdminUserController::class, 'delete']);

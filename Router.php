@@ -1,4 +1,7 @@
 <?php
+
+use App\Services\AccessLogService;
+
 class Router {
     protected static $routes = [];
     public static function get($path, $action) { 
@@ -33,6 +36,7 @@ class Router {
         }
 
         $routes = self::$routes[$method] ?? [];
+        $accessLogService = new AccessLogService();
 
         // 경로 매칭
         foreach ($routes as $path => $action) {
@@ -56,6 +60,7 @@ class Router {
             }
 
             // 라우트 핸들러 실행
+            $accessLogService->logRequest($uri, $method);
             if (is_array($action) && class_exists($action[0])) {
                 $controller = new $action[0]();
                 $methodName = $action[1];
