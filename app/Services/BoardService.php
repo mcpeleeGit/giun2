@@ -23,6 +23,11 @@ class BoardService
         return $this->boardRepository->findRecent($limit);
     }
 
+    public function getPostsBetween(\DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->boardRepository->findBetween($start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s'));
+    }
+
     public function getPostsByUser(int $userId): array
     {
         return $this->boardRepository->findByUser($userId);

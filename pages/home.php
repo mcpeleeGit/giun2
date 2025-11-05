@@ -29,6 +29,82 @@
     </div>
 </section>
 
+<?php if (!empty($calendarMonths ?? [])): ?>
+<section class="section">
+    <div class="container">
+        <div class="surface-card calendar-card">
+            <div class="section-header">
+                <h2>커뮤니티 일정 캘린더</h2>
+                <p>전달부터 다음 달까지 게시글 등록 현황을 한눈에 확인하세요.</p>
+            </div>
+            <div class="calendar-grid">
+                <?php foreach ($calendarMonths as $calendarMonth): ?>
+                    <div class="calendar-month">
+                        <header class="calendar-month__header">
+                            <h3><?= htmlspecialchars($calendarMonth['label'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                        </header>
+                        <table class="calendar-table">
+                            <thead>
+                                <tr>
+                                    <?php foreach ($calendarWeekdays as $weekday): ?>
+                                        <th scope="col"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></th>
+                                    <?php endforeach; ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($calendarMonth['weeks'] as $week): ?>
+                                    <tr>
+                                        <?php foreach ($week as $day): ?>
+                                            <td class="calendar-day <?= $day['isCurrentMonth'] ? '' : 'is-outside'; ?>">
+                                                <span class="calendar-date"><?= htmlspecialchars($day['day'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php if (!empty($day['entries'])): ?>
+                                                    <div class="calendar-entries">
+                                                        <?php $entriesToShow = array_slice($day['entries'], 0, 3); ?>
+                                                        <?php foreach ($entriesToShow as $entry): ?>
+                                                            <?php
+                                                            $icon = $calendarIcons[$entry['type']] ?? '•';
+                                                            $title = $entry['title'] ?? '';
+                                                            if (function_exists('mb_strimwidth')) {
+                                                                $title = mb_strimwidth($title, 0, 24, '…', 'UTF-8');
+                                                            } else {
+                                                                $title = strlen($title) > 24 ? substr($title, 0, 24) . '…' : $title;
+                                                            }
+                                                            ?>
+                                                            <div class="calendar-entry">
+                                                                <span class="calendar-entry-icon"><?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                                <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                        <?php $remainingCount = count($day['entries']) - count($entriesToShow); ?>
+                                                        <?php if ($remainingCount > 0): ?>
+                                                            <div class="calendar-entry calendar-entry--more">+<?= $remainingCount; ?> 더보기</div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </td>
+                                        <?php endforeach; ?>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="calendar-legend">
+                <div class="calendar-legend__item">
+                    <span class="calendar-entry-icon"><?= htmlspecialchars($calendarIcons['board'] ?? '🗂', ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span>회원 게시판</span>
+                </div>
+                <div class="calendar-legend__item">
+                    <span class="calendar-entry-icon"><?= htmlspecialchars($calendarIcons['blog'] ?? '✍️', ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span>블로그</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 <section class="section section--muted">
     <div class="container">
         <div class="surface-card">
