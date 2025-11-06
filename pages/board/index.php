@@ -30,7 +30,7 @@
                     $isOwner = $currentUser && (int)$currentUser->id === (int)$post->user_id;
                     $editTarget = 'board-' . $post->id;
                 ?>
-                <article class="board-post">
+                <article id="board-post-<?= $post->id; ?>" class="board-post">
                     <header>
                         <h3><?= htmlspecialchars($post->title, ENT_QUOTES, 'UTF-8'); ?></h3>
                         <div class="meta">

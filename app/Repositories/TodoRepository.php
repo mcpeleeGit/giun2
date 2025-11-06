@@ -50,6 +50,25 @@ class TodoRepository extends Repository
         }, []);
     }
 
+    public function findBetweenByUser(int $userId, string $startDate, string $endDate): array
+    {
+        return $this->withTableRetry(function () use ($userId, $startDate, $endDate) {
+            $stmt = $this->pdo->prepare('SELECT * FROM todos WHERE user_id = :user_id AND created_at BETWEEN :start AND :end ORDER BY created_at ASC');
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindValue(':start', $startDate);
+            $stmt->bindValue(':end', $endDate);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map(function ($row) {
+                $todo = new Todo();
+                $this->mapDataToObject($row, $todo);
+                $todo->is_completed = (bool)$row['is_completed'];
+                return $todo;
+            }, $rows);
+        }, []);
+    }
+
     public function create(int $userId, string $title): bool
     {
         return $this->withTableRetry(function () use ($userId, $title) {

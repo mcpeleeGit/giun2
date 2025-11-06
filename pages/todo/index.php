@@ -26,7 +26,7 @@
                     <ul class="todo-list">
                         <?php foreach ($todos as $todo): ?>
                             <?php $editTarget = 'todo-' . $todo->id; ?>
-                            <li class="todo-item <?= $todo->is_completed ? 'completed' : ''; ?>">
+                            <li id="todo-<?= $todo->id; ?>" class="todo-item <?= $todo->is_completed ? 'completed' : ''; ?>">
                                 <div class="todo-content">
                                     <div>
                                         <div class="todo-title"><?= htmlspecialchars($todo->title, ENT_QUOTES, 'UTF-8'); ?></div>

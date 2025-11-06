@@ -23,6 +23,15 @@ class TodoService
         return $this->todoRepository->getRecentByUser($userId, $limit);
     }
 
+    public function getTodosBetween(int $userId, \DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->todoRepository->findBetweenByUser(
+            $userId,
+            $start->format('Y-m-d H:i:s'),
+            $end->format('Y-m-d H:i:s')
+        );
+    }
+
     public function createTodo(int $userId, string $title): bool
     {
         return $this->todoRepository->create($userId, $title);

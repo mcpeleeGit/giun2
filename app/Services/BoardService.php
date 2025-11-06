@@ -28,6 +28,15 @@ class BoardService
         return $this->boardRepository->findBetween($start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s'));
     }
 
+    public function getPostsBetweenForUser(int $userId, \DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->boardRepository->findBetweenByUser(
+            $userId,
+            $start->format('Y-m-d H:i:s'),
+            $end->format('Y-m-d H:i:s')
+        );
+    }
+
     public function getPostsByUser(int $userId): array
     {
         return $this->boardRepository->findByUser($userId);

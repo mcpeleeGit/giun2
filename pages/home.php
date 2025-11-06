@@ -34,8 +34,15 @@
     <div class="container">
         <div class="surface-card calendar-card">
             <div class="section-header">
-                <h2>커뮤니티 일정 캘린더</h2>
-                <p>전달부터 다음 달까지 게시글 등록 현황을 한눈에 확인하세요.</p>
+                <?php
+                $calendarMode = $calendarMode ?? 'community';
+                $calendarTitle = $calendarMode === 'personal' ? '나의 일정 캘린더' : '커뮤니티 일정 캘린더';
+                $calendarDescription = $calendarMode === 'personal'
+                    ? '전달부터 다음 달까지 내가 작성한 게시글과 TO-DO를 한눈에 확인하세요.'
+                    : '전달부터 다음 달까지 게시글 등록 현황을 한눈에 확인하세요.';
+                ?>
+                <h2><?= htmlspecialchars($calendarTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
+                <p><?= htmlspecialchars($calendarDescription, ENT_QUOTES, 'UTF-8'); ?></p>
             </div>
             <div class="calendar-grid">
                 <?php foreach ($calendarMonths as $calendarMonth): ?>
@@ -69,11 +76,14 @@
                                                             } else {
                                                                 $title = strlen($title) > 24 ? substr($title, 0, 24) . '…' : $title;
                                                             }
+                                                            $link = $entry['url'] ?? null;
+                                                            $tagName = $link ? 'a' : 'div';
+                                                            $hrefAttribute = $link ? ' href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '"' : '';
                                                             ?>
-                                                            <div class="calendar-entry">
+                                                            <<?= $tagName; ?> class="calendar-entry"<?= $hrefAttribute; ?>>
                                                                 <span class="calendar-entry-icon"><?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
                                                                 <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
-                                                            </div>
+                                                            </<?= $tagName; ?>>
                                                         <?php endforeach; ?>
                                                         <?php $remainingCount = count($day['entries']) - count($entriesToShow); ?>
                                                         <?php if ($remainingCount > 0): ?>
@@ -90,16 +100,16 @@
                     </div>
                 <?php endforeach; ?>
             </div>
-            <div class="calendar-legend">
-                <div class="calendar-legend__item">
-                    <span class="calendar-entry-icon"><?= htmlspecialchars($calendarIcons['board'] ?? '🗂', ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span>회원 게시판</span>
+            <?php if (!empty($calendarLegend ?? [])): ?>
+                <div class="calendar-legend">
+                    <?php foreach ($calendarLegend as $type => $label): ?>
+                        <div class="calendar-legend__item">
+                            <span class="calendar-entry-icon"><?= htmlspecialchars($calendarIcons[$type] ?? '•', ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?></span>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-                <div class="calendar-legend__item">
-                    <span class="calendar-entry-icon"><?= htmlspecialchars($calendarIcons['blog'] ?? '✍️', ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span>블로그</span>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>
