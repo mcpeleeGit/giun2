@@ -1,7 +1,7 @@
 <section class="analytics">
     <header class="analytics__header">
         <h1>접속 통계</h1>
-        <p class="analytics__description">최근 <?= htmlspecialchars((string)($periodDays ?? 7), ENT_QUOTES, 'UTF-8'); ?>일 동안의 방문 추이를 확인하세요.</p>
+        <p class="analytics__description">최근 <?= htmlspecialchars((string)($periodDays ?? 30), ENT_QUOTES, 'UTF-8'); ?>일 동안의 방문 추이를 확인하세요.</p>
     </header>
 
     <div class="analytics__stats">
@@ -12,7 +12,7 @@
         <article class="stat-card">
             <h2>일평균 방문</h2>
             <?php
-                $dayCount = max(1, (int)($periodDays ?? 7));
+                $dayCount = max(1, (int)($periodDays ?? 30));
                 $average = ($dailyStats['total'] ?? 0) / $dayCount;
             ?>
             <p class="stat-card__value"><?= number_format($average, 1); ?></p>
@@ -68,21 +68,71 @@
                             <th scope="col">경로</th>
                             <th scope="col">방법</th>
                             <th scope="col">IP</th>
+                            <th scope="col">User-Agent</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($recentVisits as $visit): ?>
+                            <?php
+                                $agentLabel = $visit['user_agent'] ?: '알 수 없음';
+                                if (function_exists('mb_strimwidth')) {
+                                    $agentShort = mb_strimwidth($agentLabel, 0, 60, '…', 'UTF-8');
+                                } else {
+                                    $agentShort = strlen($agentLabel) > 60 ? substr($agentLabel, 0, 57) . '...' : $agentLabel;
+                                }
+                            ?>
                             <tr>
                                 <td><?= htmlspecialchars($visit['created_at'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?= htmlspecialchars($visit['path'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?= htmlspecialchars($visit['method'], ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?= htmlspecialchars($visit['ip_address'] ?: '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td title="<?= htmlspecialchars($agentLabel, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?= htmlspecialchars($agentShort, ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
                 <p class="empty-state">최근 접속 이력이 없습니다.</p>
+            <?php endif; ?>
+        </section>
+
+        <section class="panel">
+            <h2>User-Agent별 접속 이력</h2>
+            <?php if (!empty($userAgentStats)): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">User-Agent</th>
+                            <th scope="col">방문 수</th>
+                            <th scope="col">비율</th>
+                            <th scope="col">최근 접속</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($userAgentStats as $stat): ?>
+                            <?php
+                                $uaLabel = $stat['user_agent'];
+                                if (function_exists('mb_strimwidth')) {
+                                    $uaShort = mb_strimwidth($uaLabel, 0, 60, '…', 'UTF-8');
+                                } else {
+                                    $uaShort = strlen($uaLabel) > 60 ? substr($uaLabel, 0, 57) . '...' : $uaLabel;
+                                }
+                            ?>
+                            <tr>
+                                <td title="<?= htmlspecialchars($uaLabel, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?= htmlspecialchars($uaShort, ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+                                <td><?= number_format($stat['count']); ?></td>
+                                <td><?= htmlspecialchars(number_format($stat['ratio'], 1), ENT_QUOTES, 'UTF-8'); ?>%</td>
+                                <td><?= htmlspecialchars($stat['last_visit'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="empty-state">표시할 User-Agent 데이터가 없습니다.</p>
             <?php endif; ?>
         </section>
     </div>

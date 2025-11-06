@@ -92,6 +92,31 @@ class AccessLogService
         ];
     }
 
+    public function getUserAgentStats(int $days = 7, int $limit = 10): array
+    {
+        $days = max(1, $days);
+        $limit = max(1, $limit);
+        $startDate = $this->calculateStartDate($days);
+
+        $rows = $this->accessLogRepository->getUserAgentStats($startDate->format('Y-m-d H:i:s'), $limit);
+
+        $total = array_sum(array_map(static function ($row) {
+            return (int) ($row['visit_count'] ?? 0);
+        }, $rows));
+
+        return array_map(static function ($row) use ($total) {
+            $count = (int) ($row['visit_count'] ?? 0);
+            $agent = (string) ($row['user_agent'] ?? '');
+
+            return [
+                'user_agent' => $agent !== '' ? $agent : '알 수 없음',
+                'count' => $count,
+                'ratio' => $total > 0 ? round(($count / $total) * 100, 1) : 0.0,
+                'last_visit' => (string) ($row['last_visit'] ?? ''),
+            ];
+        }, $rows);
+    }
+
     public function getTopPages(int $days = 7, int $limit = 5): array
     {
         $days = max(1, $days);
