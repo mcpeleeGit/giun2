@@ -22,6 +22,16 @@ class BlogService
         return $this->blogRepository->findBetween($start->format('Y-m-d H:i:s'), $end->format('Y-m-d H:i:s'));
     }
 
+    public function getPostsBetweenForUser(int $userId, string $authorName, \DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->blogRepository->findBetweenByUser(
+            $userId,
+            $authorName,
+            $start->format('Y-m-d H:i:s'),
+            $end->format('Y-m-d H:i:s')
+        );
+    }
+
     public function getForUser(int $userId, string $authorName): array
     {
         return $this->blogRepository->findByUser($userId, $authorName);

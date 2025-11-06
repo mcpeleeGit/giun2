@@ -51,6 +51,20 @@ class BoardRepository extends Repository
         }, []);
     }
 
+    public function findBetweenByUser(int $userId, string $startDate, string $endDate): array
+    {
+        return $this->withTableRetry(function () use ($userId, $startDate, $endDate) {
+            $stmt = $this->pdo->prepare('SELECT b.*, u.name AS user_name FROM board_posts b INNER JOIN users u ON b.user_id = u.id WHERE b.user_id = :user_id AND b.created_at BETWEEN :start AND :end ORDER BY b.created_at ASC');
+            $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+            $stmt->bindValue(':start', $startDate);
+            $stmt->bindValue(':end', $endDate);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return array_map([$this, 'hydratePost'], $rows);
+        }, []);
+    }
+
     public function findByUser(int $userId): array
     {
         return $this->withTableRetry(function () use ($userId) {

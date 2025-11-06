@@ -19,7 +19,7 @@ class HomeController {
 
     public function home() {
         $currentUser = current_user();
-        $calendarData = $this->prepareCalendarData();
+        $calendarData = $this->prepareCalendarData($currentUser);
 
         view('home', [
             'currentUser' => $currentUser,
@@ -30,10 +30,12 @@ class HomeController {
             'calendarMonths' => $calendarData['months'],
             'calendarIcons' => $calendarData['icons'],
             'calendarWeekdays' => $calendarData['weekdayLabels'],
+            'calendarLegend' => $calendarData['legend'],
+            'calendarMode' => $calendarData['mode'],
         ]);
     }
 
-    private function prepareCalendarData(): array
+    private function prepareCalendarData($currentUser): array
     {
         $currentMonth = new \DateTimeImmutable('first day of this month 00:00:00');
         $monthOffsets = [-1, 0, 1];
@@ -53,8 +55,15 @@ class HomeController {
         $rangeStart = $monthPeriods[0]['start'];
         $rangeEnd = $monthPeriods[count($monthPeriods) - 1]['end'];
 
-        $boardPosts = $this->boardService->getPostsBetween($rangeStart, $rangeEnd);
-        $blogPosts = $this->blogService->getPostsBetween($rangeStart, $rangeEnd);
+        if ($currentUser) {
+            $boardPosts = $this->boardService->getPostsBetweenForUser($currentUser->id, $rangeStart, $rangeEnd);
+            $blogPosts = $this->blogService->getPostsBetweenForUser($currentUser->id, $currentUser->name, $rangeStart, $rangeEnd);
+            $todos = $this->todoService->getTodosBetween($currentUser->id, $rangeStart, $rangeEnd);
+        } else {
+            $boardPosts = $this->boardService->getPostsBetween($rangeStart, $rangeEnd);
+            $blogPosts = $this->blogService->getPostsBetween($rangeStart, $rangeEnd);
+            $todos = [];
+        }
 
         $entriesByDate = [];
 
@@ -63,6 +72,7 @@ class HomeController {
             $entriesByDate[$dateKey][] = [
                 'type' => 'board',
                 'title' => $post->title,
+                'url' => '/board#board-post-' . $post->id,
             ];
         }
 
@@ -71,6 +81,16 @@ class HomeController {
             $entriesByDate[$dateKey][] = [
                 'type' => 'blog',
                 'title' => $post->title,
+                'url' => '/blog/' . $post->id,
+            ];
+        }
+
+        foreach ($todos as $todo) {
+            $dateKey = (new \DateTimeImmutable($todo->created_at))->format('Y-m-d');
+            $entriesByDate[$dateKey][] = [
+                'type' => 'todo',
+                'title' => $todo->title,
+                'url' => '/todo#todo-' . $todo->id,
             ];
         }
 
@@ -111,12 +131,26 @@ class HomeController {
             ];
         }
 
+        $icons = [
+            'board' => '🗂',
+            'blog' => '✍️',
+        ];
+
+        $legend = [
+            'board' => '회원 게시판',
+            'blog' => $currentUser ? '나의 블로그' : '블로그',
+        ];
+
+        if ($currentUser) {
+            $icons['todo'] = '✅';
+            $legend['todo'] = 'TO-DO 리스트';
+        }
+
         return [
             'months' => $months,
-            'icons' => [
-                'board' => '🗂',
-                'blog' => '✍️',
-            ],
+            'icons' => $icons,
+            'legend' => $legend,
+            'mode' => $currentUser ? 'personal' : 'community',
             'weekdayLabels' => ['일', '월', '화', '수', '목', '금', '토'],
         ];
     }
