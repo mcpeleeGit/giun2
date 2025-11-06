@@ -86,6 +86,25 @@ class AccessLogRepository extends Repository
         }, []);
     }
 
+    public function getUserAgentStats(string $startDate, int $limit): array
+    {
+        return $this->withTableRetry(function () use ($startDate, $limit) {
+            $stmt = $this->pdo->prepare(
+                "SELECT COALESCE(user_agent, '') AS user_agent, COUNT(*) AS visit_count, MAX(created_at) AS last_visit"
+                . " FROM access_logs"
+                . " WHERE created_at >= :start_date"
+                . " GROUP BY user_agent"
+                . " ORDER BY visit_count DESC, last_visit DESC"
+                . " LIMIT :limit"
+            );
+            $stmt->bindValue(':start_date', $startDate);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }, []);
+    }
+
     private function withTableRetry(callable $operation, $fallback)
     {
         try {

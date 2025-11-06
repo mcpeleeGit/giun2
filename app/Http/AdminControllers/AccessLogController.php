@@ -17,16 +17,18 @@ class AccessLogController extends Controller
 
     public function index(): void
     {
-        $days = 7;
+        $days = 30;
         $dailyStats = $this->accessLogService->getDailyStats($days);
         $topPages = $this->accessLogService->getTopPages($days, 5);
         $recentVisits = $this->accessLogService->getRecentVisits(10);
+        $userAgentStats = $this->accessLogService->getUserAgentStats($days, 10);
 
         adminView('access_logs', [
             'admin' => $this->adminUser,
             'dailyStats' => $dailyStats,
             'topPages' => $topPages,
             'recentVisits' => $recentVisits,
+            'userAgentStats' => $userAgentStats,
             'periodDays' => $days,
         ]);
     }
