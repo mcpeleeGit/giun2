@@ -33,6 +33,7 @@ $error = $error ?? null;
                     <label class="form-field form-field--full">
                         <span>내용</span>
                         <textarea name="content" rows="10" class="js-rich-editor" placeholder="오늘의 생각을 기록해 보세요." required></textarea>
+                        <p class="form-error" hidden>내용을 입력해 주세요.</p>
                     </label>
                 </div>
                 <div class="form-actions">
@@ -73,6 +74,7 @@ $error = $error ?? null;
                             <label class="form-field">
                                 <span>내용</span>
                                 <textarea name="content" rows="10" class="js-rich-editor" required><?= htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                <p class="form-error" hidden>내용을 입력해 주세요.</p>
                             </label>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">저장</button>
@@ -157,6 +159,23 @@ $error = $error ?? null;
 .form-field.has-rich-editor .ck-focused {
     border-color: #6366f1 !important;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.form-field--error textarea,
+.form-field--error .ck-editor {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-error {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #dc2626;
+    display: none;
+}
+
+.form-field--error .form-error {
+    display: block;
 }
 
 .form-field--full {
@@ -405,15 +424,51 @@ $error = $error ?? null;
                 }).then((editor) => {
                     editorInstances.set(textarea, editor);
 
+                    textarea.removeAttribute('required');
+                    textarea.required = false;
+
                     const field = textarea.closest('.form-field');
+                    const errorMessage = field?.querySelector('.form-error');
+
+                    const clearErrorState = () => {
+                        if (field) {
+                            field.classList.remove('form-field--error');
+                        }
+                        if (errorMessage) {
+                            errorMessage.hidden = true;
+                        }
+                    };
+
                     if (field) {
                         field.classList.add('has-rich-editor');
                     }
 
+                    editor.model.document.on('change:data', clearErrorState);
+
                     const form = textarea.closest('form');
                     if (form) {
-                        form.addEventListener('submit', () => {
-                            textarea.value = editor.getData();
+                        form.addEventListener('submit', (event) => {
+                            const data = editor.getData();
+                            const tempContainer = document.createElement('div');
+                            tempContainer.innerHTML = data;
+
+                            const textContent = (tempContainer.textContent || '').replace(/\u00a0/g, '').trim();
+                            const hasMediaContent = Boolean(tempContainer.querySelector('img, video, audio, iframe, embed, object, figure'));
+
+                            if (!textContent && !hasMediaContent) {
+                                event.preventDefault();
+                                if (field) {
+                                    field.classList.add('form-field--error');
+                                }
+                                if (errorMessage) {
+                                    errorMessage.hidden = false;
+                                }
+                                editor.editing.view.focus();
+                                return;
+                            }
+
+                            textarea.value = data;
+                            clearErrorState();
                         });
                     }
                 }).catch((error) => {
