@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 use App\Services\BlogService;
 use App\Services\BoardService;
 use App\Services\TodoService;
+use App\Services\WorkoutRoutineService;
 
 class HomeController {
     private $boardService;
     private $todoService;
     private $blogService;
+    private $workoutRoutineService;
 
     public function __construct()
     {
         $this->boardService = new BoardService();
         $this->todoService = new TodoService();
         $this->blogService = new BlogService();
+        $this->workoutRoutineService = new WorkoutRoutineService();
     }
 
     public function home() {
@@ -27,6 +30,10 @@ class HomeController {
             'recentTodos' => $currentUser ? $this->todoService->getRecentTodos($currentUser->id, 3) : [],
             'message' => flash('home_message'),
             'notice' => flash('auth_notice'),
+            'workoutMessage' => flash('workout_message'),
+            'workoutError' => flash('workout_error'),
+            'workoutRoutines' => $currentUser ? $this->workoutRoutineService->getRoutineMapForUser($currentUser->id) : [],
+            'workoutWeekdays' => ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'],
             'calendarMonths' => $calendarData['months'],
             'calendarIcons' => $calendarData['icons'],
             'calendarWeekdays' => $calendarData['weekdayLabels'],

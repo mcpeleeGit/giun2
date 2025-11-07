@@ -1,6 +1,6 @@
 # 🌟 MyLife Hub - PHP Personal Homepage
 
-가벼운 MVC 구조와 서비스 계층을 갖춘 PHP 개인 홈페이지 예제입니다. TO-DO 리스트, 회원 게시판, 갤러리, 나만의 블로그, 로그인/회원가입/마이페이지 메뉴를 중심으로 개인 활동을 관리할 수 있습니다.
+가벼운 MVC 구조와 서비스 계층을 갖춘 PHP 개인 홈페이지 예제입니다. TO-DO 리스트, 회원 게시판, 갤러리, 나만의 블로그, 로그인/회원가입/마이페이지 메뉴는 물론 홈 화면에서 주간 운동 루틴까지 관리할 수 있습니다.
 
 ---
 
@@ -24,6 +24,7 @@
 └── app/
     ├── Http/Controllers/         # 컨트롤러 계층
     │   ├── HomeController.php
+    │   ├── WorkoutRoutineController.php
     │   ├── LoginController.php
     │   ├── LogoutController.php
     │   ├── MyPageController.php
@@ -33,17 +34,20 @@
     ├── Models/                   # 모델 정의
     │   ├── User.php
     │   ├── Todo.php
-    │   └── BoardPost.php
+    │   ├── BoardPost.php
+    │   └── WorkoutRoutine.php
     ├── Repositories/             # DB 접근 계층
     │   ├── Common/Repository.php
     │   ├── UserRepository.php
     │   ├── TodoRepository.php
-    │   └── BoardRepository.php
+    │   ├── BoardRepository.php
+    │   └── WorkoutRoutineRepository.php
     └── Services/                 # 비즈니스 로직 계층
         ├── LoginService.php
         ├── RegisterService.php
         ├── TodoService.php
-        └── BoardService.php
+        ├── BoardService.php
+        └── WorkoutRoutineService.php
 ```
 
 ---
@@ -104,6 +108,17 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS workout_routines (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  day_of_week TINYINT NOT NULL,
+  activity VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NULL DEFAULT NULL,
+  UNIQUE KEY uniq_workout_user_day (user_id, day_of_week),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- 기존 사용자 테이블에 카카오 로그인 ID 컬럼을 추가하려면 아래 명령을 실행하세요.
 -- ALTER TABLE users ADD COLUMN kakao_id VARCHAR(64) UNIQUE NULL AFTER password;
 ```
@@ -128,11 +143,20 @@ redirect_uri = "http://localhost:8000/auth/kakao/callback"
 | 메뉴 | 설명 |
 |------|------|
 | TO-DO 리스트 | 로그인 후 개인 할 일을 추가·완료·삭제로 관리 |
+| 주간 운동 루틴 | 홈 화면에서 요일별 운동 계획을 작성·저장 |
 | 회원 게시판 & 갤러리 | 회원 간 게시글과 이미지 갤러리를 공유 |
 | 나의 블로그 | 로그인한 사용자만 열람·관리하는 개인 블로그 |
 | 로그인/회원가입 | 이메일 기반 회원 가입 및 인증 |
 | 마이페이지 | 나의 할 일 통계와 최근 게시글/할 일 확인 |
-| 홈 | 주요 메뉴 안내, 최신 게시글/할 일/이미지 미리보기 |
+| 홈 | 주요 메뉴 안내, 최신 게시글/할 일/이미지 및 개인화 캘린더 |
+
+---
+
+### 🏋️ 주간 운동 루틴 관리
+
+- 로그인한 사용자는 홈 화면 히어로 영역에서 요일별 운동 계획을 입력할 수 있습니다.
+- 빈 칸으로 제출하면 해당 요일의 루틴이 삭제되고, 작성한 내용은 즉시 저장됩니다.
+- 입력된 루틴은 `workout_routines` 테이블에 사용자별로 저장되며, 다음 접속 시 자동으로 불러옵니다.
 
 ---
 

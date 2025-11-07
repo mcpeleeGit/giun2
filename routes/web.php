@@ -16,6 +16,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
 use App\Http\Controllers\KakaoAuthController;
+use App\Http\Controllers\WorkoutRoutineController;
 
 Router::get('/', [HomeController::class, 'home']);
 
@@ -24,6 +25,8 @@ Router::post('/todo', [TodoController::class, 'store']);
 Router::post('/todo/{id}/update', [TodoController::class, 'update']);
 Router::post('/todo/{id}/toggle', [TodoController::class, 'toggle']);
 Router::post('/todo/{id}/delete', [TodoController::class, 'delete']);
+
+Router::post('/workout-routines', [WorkoutRoutineController::class, 'save']);
 
 Router::get('/gallery', [GalleryController::class, 'index']);
 Router::post('/gallery', [GalleryController::class, 'store']);
