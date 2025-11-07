@@ -169,3 +169,147 @@ function getSeo($seo_data) {
 
     return $seo;
 }
+
+function sanitize_rich_text(string $html): string
+{
+    $html = trim($html);
+
+    if ($html === '') {
+        return '';
+    }
+
+    $allowedTags = [
+        'p' => [],
+        'br' => [],
+        'strong' => [],
+        'em' => [],
+        'u' => [],
+        's' => [],
+        'ul' => [],
+        'ol' => [],
+        'li' => [],
+        'blockquote' => [],
+        'pre' => [],
+        'code' => [],
+        'h1' => [],
+        'h2' => [],
+        'h3' => [],
+        'h4' => [],
+        'figure' => [],
+        'figcaption' => [],
+        'a' => ['href', 'title', 'target', 'rel'],
+        'img' => ['src', 'alt', 'title'],
+    ];
+
+    $document = new \DOMDocument();
+    $previousUseInternalErrors = libxml_use_internal_errors(true);
+
+    $document->loadHTML('<?xml encoding="utf-8"?><div>' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previousUseInternalErrors);
+
+    $allowedAnchorSchemes = ['http', 'https', 'mailto'];
+
+    $sanitizeNode = function (\DOMNode $node) use (&$sanitizeNode, $allowedTags, $allowedAnchorSchemes) {
+        if ($node->nodeType === XML_ELEMENT_NODE) {
+            $tagName = strtolower($node->nodeName);
+
+            if (!isset($allowedTags[$tagName])) {
+                $parent = $node->parentNode;
+                if ($parent) {
+                    while ($node->firstChild) {
+                        $parent->insertBefore($node->firstChild, $node);
+                    }
+                    $parent->removeChild($node);
+                }
+                return;
+            }
+
+            $allowedAttributes = $allowedTags[$tagName];
+
+            if ($node->hasAttributes()) {
+                foreach (iterator_to_array($node->attributes) as $attribute) {
+                    $attrName = strtolower($attribute->nodeName);
+                    $value = trim($attribute->nodeValue);
+
+                    if (!in_array($attrName, $allowedAttributes, true) || $value === '') {
+                        $node->removeAttributeNode($attribute);
+                        continue;
+                    }
+
+                    if ($tagName === 'a' && $attrName === 'href') {
+                        if (!sanitize_rich_text_is_allowed_url($value, $allowedAnchorSchemes, true)) {
+                            $node->removeAttribute($attrName);
+                            continue;
+                        }
+                    }
+
+                    if ($tagName === 'a' && $attrName === 'target') {
+                        $allowedTargets = ['_self', '_blank'];
+                        if (!in_array(strtolower($value), $allowedTargets, true)) {
+                            $node->removeAttribute($attrName);
+                            continue;
+                        }
+                    }
+
+                    if ($tagName === 'img' && $attrName === 'src') {
+                        if (!sanitize_rich_text_is_allowed_url($value, ['http', 'https'], true)) {
+                            $node->removeAttribute($attrName);
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            if ($tagName === 'a' && strtolower($node->getAttribute('target')) === '_blank') {
+                $existingRel = $node->getAttribute('rel');
+                $relParts = array_filter(array_map('trim', explode(' ', $existingRel . ' noopener noreferrer')));
+                $node->setAttribute('rel', implode(' ', array_unique($relParts)));
+            }
+
+            if ($tagName === 'img' && !$node->hasAttribute('alt')) {
+                $node->setAttribute('alt', '');
+            }
+        }
+
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            $sanitizeNode($child);
+        }
+    };
+
+    $root = $document->documentElement;
+    if ($root) {
+        $sanitizeNode($root);
+    }
+
+    $sanitized = '';
+    if ($root) {
+        foreach ($root->childNodes as $child) {
+            $sanitized .= $document->saveHTML($child);
+        }
+    }
+
+    return $sanitized;
+}
+
+function sanitize_rich_text_is_allowed_url(string $url, array $allowedSchemes, bool $allowRelative = false): bool
+{
+    $url = trim($url);
+
+    if ($url === '') {
+        return false;
+    }
+
+    if ($allowRelative && (str_starts_with($url, '/') || str_starts_with($url, '#'))) {
+        return true;
+    }
+
+    $parsed = parse_url($url);
+
+    if (!$parsed || empty($parsed['scheme'])) {
+        return false;
+    }
+
+    return in_array(strtolower($parsed['scheme']), $allowedSchemes, true);
+}

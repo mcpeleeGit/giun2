@@ -33,15 +33,16 @@ class BlogController extends Controller
         $title = $this->getPostString('title');
         $author = $this->getPostString('author');
         $content = $this->getPostString('content');
+        $sanitizedContent = $content !== null ? sanitize_rich_text($content) : null;
 
-        if ($title === null || $author === null || $content === null) {
+        if ($title === null || $author === null || $sanitizedContent === null || $sanitizedContent === '') {
             $this->redirectWithError('/admin/posts', '모든 필드를 입력해 주세요.');
         }
 
         $post = new Post();
         $post->title = $title;
         $post->author = $author;
-        $post->content = $content;
+        $post->content = $sanitizedContent;
         $post->user_id = $this->adminUser->id ?? null;
 
         if (!$this->blogService->createPost($post)) {
@@ -59,8 +60,9 @@ class BlogController extends Controller
         $title = $this->getPostString('title');
         $author = $this->getPostString('author');
         $content = $this->getPostString('content');
+        $sanitizedContent = $content !== null ? sanitize_rich_text($content) : null;
 
-        if ($id === null || $title === null || $author === null || $content === null) {
+        if ($id === null || $title === null || $author === null || $sanitizedContent === null || $sanitizedContent === '') {
             $this->redirectWithError('/admin/posts', '입력값을 다시 확인해 주세요.');
         }
 
@@ -68,7 +70,7 @@ class BlogController extends Controller
         $post->id = $id;
         $post->title = $title;
         $post->author = $author;
-        $post->content = $content;
+        $post->content = $sanitizedContent;
         $post->user_id = $this->adminUser->id ?? null;
 
         if (!$this->blogService->updatePost($post)) {

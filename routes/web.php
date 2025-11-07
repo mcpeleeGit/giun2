@@ -33,6 +33,7 @@ Router::get('/blog', [BlogController::class, 'index']);
 Router::post('/blog', [BlogController::class, 'store']);
 Router::post('/blog/{id}/update', [BlogController::class, 'update']);
 Router::post('/blog/{id}/delete', [BlogController::class, 'delete']);
+Router::post('/blog/upload-image', [BlogController::class, 'uploadImage']);
 Router::get('/blog/{id}', [BlogController::class, 'show']);
 
 Router::get('/board', [BoardController::class, 'index']);

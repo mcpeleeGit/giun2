@@ -32,7 +32,7 @@ $error = $error ?? null;
                     </label>
                     <label class="form-field form-field--full">
                         <span>내용</span>
-                        <textarea name="content" rows="4" placeholder="오늘의 생각을 기록해 보세요." required></textarea>
+                        <textarea name="content" rows="10" class="js-rich-editor" placeholder="오늘의 생각을 기록해 보세요." required></textarea>
                     </label>
                 </div>
                 <div class="form-actions">
@@ -49,7 +49,13 @@ $error = $error ?? null;
                             <span class="blog-entry__meta">작성일 <?= htmlspecialchars(date('Y.m.d H:i', strtotime($post->created_at ?? 'now'))); ?></span>
                         </header>
                         <div class="blog-entry__content">
-                            <p><?= nl2br(htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8')); ?></p>
+                            <?php
+                            $rawContent = (string)($post->content ?? '');
+                            $hasMarkup = preg_match('/<\s*(?:p|br|strong|em|u|s|ul|ol|li|blockquote|pre|code|figure|figcaption|a|img|h[1-4])/i', $rawContent) === 1;
+                            echo $hasMarkup
+                                ? $rawContent
+                                : nl2br(htmlspecialchars($rawContent, ENT_QUOTES, 'UTF-8'));
+                            ?>
                         </div>
                         <div class="blog-entry__actions">
                             <button type="button" class="link-button" data-edit-toggle="<?= $editTarget; ?>">수정</button>
@@ -66,7 +72,7 @@ $error = $error ?? null;
                             </label>
                             <label class="form-field">
                                 <span>내용</span>
-                                <textarea name="content" rows="4" required><?= htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                <textarea name="content" rows="10" class="js-rich-editor" required><?= htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
                             </label>
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">저장</button>
@@ -128,6 +134,31 @@ $error = $error ?? null;
     outline: none;
 }
 
+.form-field.has-rich-editor .ck-editor {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-field.has-rich-editor .ck-toolbar {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-field.has-rich-editor .ck-editor__editable {
+    min-height: 240px;
+    padding: 1rem;
+}
+
+.form-field.has-rich-editor .ck-editor__editable:focus {
+    box-shadow: none;
+}
+
+.form-field.has-rich-editor .ck-focused {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
 .form-field--full {
     grid-column: 1 / -1;
 }
@@ -174,8 +205,59 @@ $error = $error ?? null;
 
 .blog-entry__content {
     color: #374151;
-    line-height: 1.6;
-    white-space: pre-wrap;
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+.blog-entry__content p,
+.blog-entry__content h1,
+.blog-entry__content h2,
+.blog-entry__content h3,
+.blog-entry__content h4,
+.blog-entry__content ul,
+.blog-entry__content ol,
+.blog-entry__content blockquote,
+.blog-entry__content pre {
+    margin: 0 0 1rem;
+}
+
+.blog-entry__content ul,
+.blog-entry__content ol {
+    padding-left: 1.25rem;
+}
+
+.blog-entry__content img,
+.blog-entry__content figure {
+    max-width: 100%;
+}
+
+.blog-entry__content img {
+    border-radius: 12px;
+    display: block;
+    height: auto;
+    margin: 1.25rem auto;
+}
+
+.blog-entry__content figure {
+    margin: 1.5rem 0;
+    text-align: center;
+}
+
+.blog-entry__content figcaption {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.blog-entry__content pre {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.blog-entry__content > :last-child {
+    margin-bottom: 0;
 }
 
 .blog-entry__actions {
@@ -227,23 +309,151 @@ $error = $error ?? null;
 }
 </style>
 
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.0/classic/ckeditor.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+        const editorInstances = new Map();
+
+        class BlogImageUploadAdapter {
+            constructor(loader, token) {
+                this.loader = loader;
+                this.csrfToken = token;
+                this.abortController = new AbortController();
+            }
+
+            upload() {
+                return this.loader.file.then((file) => new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    const headers = {};
+                    if (this.csrfToken) {
+                        headers['X-CSRF-TOKEN'] = this.csrfToken;
+                    }
+
+                    fetch('/blog/upload-image', {
+                        method: 'POST',
+                        body: formData,
+                        headers,
+                        signal: this.abortController.signal,
+                    })
+                        .then((response) => {
+                            if (!response.ok) {
+                                return response.json().catch(() => ({})).then((data) => {
+                                    const message = data.error ?? '이미지 업로드에 실패했습니다.';
+                                    throw new Error(message);
+                                });
+                            }
+
+                            return response.json();
+                        })
+                        .then((data) => {
+                            if (data && data.url) {
+                                resolve({ default: data.url });
+                            } else {
+                                reject(new Error('이미지 업로드 응답이 올바르지 않습니다.'));
+                            }
+                        })
+                        .catch((error) => {
+                            if (error.name === 'AbortError') {
+                                return;
+                            }
+                            reject(error);
+                        });
+                }));
+            }
+
+            abort() {
+                this.abortController.abort();
+            }
+        }
+
+        function blogImageUploadPlugin(editor) {
+            editor.plugins.get('FileRepository').createUploadAdapter = (loader) => new BlogImageUploadAdapter(loader, csrfToken);
+        }
+
+        function initializeEditors() {
+            if (typeof ClassicEditor === 'undefined') {
+                console.error('에디터를 불러오지 못했습니다.');
+                return;
+            }
+
+            document.querySelectorAll('textarea.js-rich-editor').forEach((textarea) => {
+                if (editorInstances.has(textarea)) {
+                    return;
+                }
+
+                ClassicEditor.create(textarea, {
+                    extraPlugins: [blogImageUploadPlugin],
+                    language: 'ko',
+                    toolbar: [
+                        'heading',
+                        '|',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'link',
+                        'bulletedList',
+                        'numberedList',
+                        'blockQuote',
+                        'insertTable',
+                        'imageUpload',
+                        'undo',
+                        'redo',
+                    ],
+                }).then((editor) => {
+                    editorInstances.set(textarea, editor);
+
+                    const field = textarea.closest('.form-field');
+                    if (field) {
+                        field.classList.add('has-rich-editor');
+                    }
+
+                    const form = textarea.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', () => {
+                            textarea.value = editor.getData();
+                        });
+                    }
+                }).catch((error) => {
+                    console.error('에디터 초기화에 실패했습니다.', error);
+                });
+            });
+        }
+
+        function focusForm(form) {
+            requestAnimationFrame(() => {
+                const editable = form.querySelector('.ck-editor__editable');
+                if (editable) {
+                    editable.focus();
+                    return;
+                }
+
+                const firstInput = form.querySelector('input, textarea');
+                if (firstInput) {
+                    firstInput.focus();
+                    if (typeof firstInput.setSelectionRange === 'function') {
+                        const length = firstInput.value.length;
+                        firstInput.setSelectionRange(length, length);
+                    }
+                }
+            });
+        }
+
+        initializeEditors();
+
         document.querySelectorAll('[data-edit-toggle]').forEach((button) => {
             button.addEventListener('click', () => {
                 const target = button.getAttribute('data-edit-toggle');
                 const form = document.querySelector(`[data-edit-form="${target}"]`);
-                if (form) {
-                    form.hidden = false;
-                    const firstInput = form.querySelector('input, textarea');
-                    if (firstInput) {
-                        firstInput.focus();
-                        if (firstInput.setSelectionRange) {
-                            const length = firstInput.value.length;
-                            firstInput.setSelectionRange(length, length);
-                        }
-                    }
+                if (!form) {
+                    return;
                 }
+
+                form.hidden = false;
+                initializeEditors();
+                focusForm(form);
             });
         });
 
