@@ -28,6 +28,11 @@ spl_autoload_register(function ($class) {
     }
 });
 
+$userModelPath = __DIR__ . '/app/Models/User.php';
+if (!class_exists('App\\Models\\User', false) && file_exists($userModelPath)) {
+    require_once $userModelPath;
+}
+
 function currentAdminUser(): ?User
 {
     if (!isset($_SESSION['user'])) {
