@@ -278,14 +278,21 @@ function sanitize_rich_text(string $html): string
         }
     };
 
-    $root = $document->documentElement;
-    if ($root) {
-        $sanitizeNode($root);
+    $wrapper = $document->getElementsByTagName('div')->item(0);
+
+    if (!$wrapper) {
+        $wrapper = $document->documentElement;
+    }
+
+    if ($wrapper) {
+        foreach (iterator_to_array($wrapper->childNodes) as $child) {
+            $sanitizeNode($child);
+        }
     }
 
     $sanitized = '';
-    if ($root) {
-        foreach ($root->childNodes as $child) {
+    if ($wrapper) {
+        foreach ($wrapper->childNodes as $child) {
             $sanitized .= $document->saveHTML($child);
         }
     }
