@@ -1,27 +1,30 @@
 <section class="hero">
-    <div class="container hero-layout">
-        <div class="hero-content">
-            <?php if (!empty($message)): ?>
-                <div class="message message-success"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($notice)): ?>
-                <div class="message message-info"><?= htmlspecialchars($notice, ENT_QUOTES, 'UTF-8'); ?></div>
-            <?php endif; ?>
-            <span class="tag">나만의 라이프 매니저</span>
-            <h1>하루의 작은 계획부터 커뮤니티까지, MyLife Hub에서 관리하세요.</h1>
-            <p>TO-DO 리스트로 일상을 정리하고, 회원 게시판에서 이야기를 나누며, 마이페이지에서 나만의 기록을 돌아볼 수 있는 공간입니다.</p>
-            <div class="hero-actions">
-                <?php if (!empty($currentUser)): ?>
-                    <a href="/todo" class="btn btn-primary">오늘의 할 일 작성하기</a>
-                    <a href="/board" class="btn btn-outline">커뮤니티 참여하기</a>
-                <?php else: ?>
-                    <a href="/register" class="btn btn-primary">회원가입으로 시작하기</a>
-                    <a href="/login" class="btn btn-outline">이미 계정이 있으신가요?</a>
+    <div class="container hero-layout<?= !empty($currentUser) ? ' hero-layout--workout-only' : ''; ?>">
+        <?php if (!empty($message) || !empty($notice)): ?>
+            <div class="hero-messages">
+                <?php if (!empty($message)): ?>
+                    <div class="message message-success"><?= htmlspecialchars($message, ENT_QUOTES, 'UTF-8'); ?></div>
+                <?php endif; ?>
+                <?php if (!empty($notice)): ?>
+                    <div class="message message-info"><?= htmlspecialchars($notice, ENT_QUOTES, 'UTF-8'); ?></div>
                 <?php endif; ?>
             </div>
-        </div>
+        <?php endif; ?>
+
+        <?php if (empty($currentUser)): ?>
+            <div class="hero-content">
+                <span class="tag">나만의 라이프 매니저</span>
+                <h1>하루의 작은 계획부터 커뮤니티까지, MyLife Hub에서 관리하세요.</h1>
+                <p>TO-DO 리스트로 일상을 정리하고, 회원 게시판에서 이야기를 나누며, 마이페이지에서 나만의 기록을 돌아볼 수 있는 공간입니다.</p>
+                <div class="hero-actions">
+                    <a href="/register" class="btn btn-primary">회원가입으로 시작하기</a>
+                    <a href="/login" class="btn btn-outline">이미 계정이 있으신가요?</a>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <?php if (!empty($currentUser)): ?>
-            <div class="hero-workout">
+            <div class="hero-workout hero-workout--expanded">
                 <div class="surface-card workout-card">
                     <header class="workout-card__header">
                         <h2>주간 운동 루틴</h2>
