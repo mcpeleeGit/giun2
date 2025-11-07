@@ -46,7 +46,17 @@
             </div>
             <div class="calendar-grid">
                 <?php foreach ($calendarMonths as $calendarMonth): ?>
-                    <div class="calendar-month">
+                    <?php
+                    $position = $calendarMonth['position'] ?? 'adjacent';
+                    $validPositions = ['previous', 'current', 'next'];
+                    if (!in_array($position, $validPositions, true)) {
+                        $position = 'previous';
+                    }
+                    $monthClasses = ['calendar-month', 'calendar-month--' . $position];
+                    $monthClassAttribute = htmlspecialchars(implode(' ', $monthClasses), ENT_QUOTES, 'UTF-8');
+                    $isCurrentMonth = !empty($calendarMonth['isCurrent']);
+                    ?>
+                    <div class="<?= $monthClassAttribute; ?>"<?= $isCurrentMonth ? ' aria-current="date"' : ''; ?>>
                         <header class="calendar-month__header">
                             <h3><?= htmlspecialchars($calendarMonth['label'], ENT_QUOTES, 'UTF-8'); ?></h3>
                         </header>

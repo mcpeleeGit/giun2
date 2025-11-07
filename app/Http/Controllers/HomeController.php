@@ -41,7 +41,7 @@ class HomeController {
         $monthOffsets = [-1, 0, 1];
         $monthPeriods = [];
 
-        foreach ($monthOffsets as $offset) {
+        foreach ($monthOffsets as $index => $offset) {
             $targetMonth = $currentMonth->modify(($offset >= 0 ? '+' : '') . $offset . ' month');
             $monthStart = $targetMonth->setTime(0, 0, 0);
             $monthEnd = $targetMonth->modify('last day of this month')->setTime(23, 59, 59);
@@ -49,6 +49,7 @@ class HomeController {
             $monthPeriods[] = [
                 'start' => $monthStart,
                 'end' => $monthEnd,
+                'position' => $offset < 0 ? 'previous' : ($offset > 0 ? 'next' : 'current'),
             ];
         }
 
@@ -128,6 +129,8 @@ class HomeController {
             $months[] = [
                 'label' => $monthStart->format('Y년 n월'),
                 'weeks' => $weeks,
+                'position' => $period['position'] ?? ($monthStart->format('Ym') === $currentMonth->format('Ym') ? 'current' : 'previous'),
+                'isCurrent' => ($period['position'] ?? null) === 'current',
             ];
         }
 
