@@ -20,12 +20,48 @@
                 <?php endif; ?>
             </div>
         </div>
-        <ul class="hero-highlights">
-            <li>TO-DO 리스트로 하루의 우선순위를 빠르게 정리</li>
-            <li>회원 게시판과 갤러리에서 생생한 커뮤니티 소식을 확인</li>
-            <li>나만의 블로그에 하루의 생각을 조용히 기록</li>
-            <li>마이페이지에서 활동 기록과 통계를 한눈에</li>
-        </ul>
+        <?php if (!empty($currentUser)): ?>
+            <div class="hero-workout">
+                <div class="surface-card workout-card">
+                    <header class="workout-card__header">
+                        <h2>주간 운동 루틴</h2>
+                        <p>요일별로 계획을 작성하고 규칙적인 루틴을 완성해 보세요.</p>
+                    </header>
+
+                    <?php if (!empty($workoutMessage)): ?>
+                        <div class="message message-success"><?= htmlspecialchars($workoutMessage, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($workoutError)): ?>
+                        <div class="message message-error"><?= htmlspecialchars($workoutError, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <?php endif; ?>
+
+                    <form method="POST" action="/workout-routines" class="workout-form">
+                        <?= csrf_field(); ?>
+                        <div class="workout-grid">
+                            <?php foreach ($workoutWeekdays as $index => $weekday): ?>
+                                <?php $routineValue = $workoutRoutines[$index] ?? ''; ?>
+                                <div class="workout-day">
+                                    <label class="workout-day__label" for="workout-<?= $index; ?>"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></label>
+                                    <textarea id="workout-<?= $index; ?>" name="routines[<?= $index; ?>]" rows="2" placeholder="예: 상체 근력 + 스트레칭"><?= htmlspecialchars($routineValue, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="workout-actions">
+                            <button type="submit" class="btn btn-primary">운동 루틴 저장</button>
+                            <p class="workout-hint">빈 칸으로 두면 해당 요일의 루틴이 삭제됩니다.</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <ul class="hero-highlights">
+                <li>TO-DO 리스트로 하루의 우선순위를 빠르게 정리</li>
+                <li>회원 게시판과 갤러리에서 생생한 커뮤니티 소식을 확인</li>
+                <li>나만의 블로그에 하루의 생각을 조용히 기록</li>
+                <li>마이페이지에서 활동 기록과 통계를 한눈에</li>
+            </ul>
+        <?php endif; ?>
     </div>
 </section>
 
