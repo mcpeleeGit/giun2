@@ -34,15 +34,16 @@ class BlogController
 
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
+        $sanitizedContent = sanitize_rich_text($content);
 
-        if ($title === '' || $content === '') {
+        if ($title === '' || $sanitizedContent === '') {
             flash('blog_error', '제목과 내용을 모두 입력해 주세요.');
             redirect('/blog');
         }
 
         $post = new Post();
         $post->title = $title;
-        $post->content = $content;
+        $post->content = $sanitizedContent;
         $post->author = $user->name;
         $post->user_id = $user->id;
 
@@ -62,8 +63,9 @@ class BlogController
 
         $title = trim($_POST['title'] ?? '');
         $content = trim($_POST['content'] ?? '');
+        $sanitizedContent = sanitize_rich_text($content);
 
-        if ($title === '' || $content === '') {
+        if ($title === '' || $sanitizedContent === '') {
             flash('blog_error', '제목과 내용을 모두 입력해 주세요.');
             redirect('/blog');
         }
@@ -71,7 +73,7 @@ class BlogController
         $post = new Post();
         $post->id = (int)$id;
         $post->title = $title;
-        $post->content = $content;
+        $post->content = $sanitizedContent;
         $post->author = $user->name;
         $post->user_id = $user->id;
 
@@ -151,5 +153,83 @@ class BlogController
         }
 
         return ($post->author ?? '') === ($user->name ?? '');
+    }
+
+    public function uploadImage(): void
+    {
+        $user = require_login();
+
+        $token = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? null);
+        if (!validate_csrf_token($token)) {
+            $this->respondJson(419, ['error' => '잘못된 요청입니다.']);
+            return;
+        }
+
+        $file = $_FILES['image'] ?? null;
+        if (!$file || !is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            $this->respondJson(400, ['error' => '업로드할 이미지를 찾을 수 없습니다.']);
+            return;
+        }
+
+        if (!is_uploaded_file($file['tmp_name'])) {
+            $this->respondJson(400, ['error' => '잘못된 업로드 요청입니다.']);
+            return;
+        }
+
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        if (($file['size'] ?? 0) > $maxSize) {
+            $this->respondJson(413, ['error' => '이미지 크기는 5MB를 초과할 수 없습니다.']);
+            return;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($file['tmp_name']) ?: '';
+        $finfo = null;
+
+        $allowedMimeTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+        ];
+
+        if (!isset($allowedMimeTypes[$mimeType])) {
+            $this->respondJson(415, ['error' => '지원하지 않는 이미지 형식입니다.']);
+            return;
+        }
+
+        $projectRoot = dirname(__DIR__, 3);
+        $uploadDir = '/assets/uploads/blog';
+        $uploadPath = $projectRoot . $uploadDir;
+
+        if (!is_dir($uploadPath) && !mkdir($uploadPath, 0755, true) && !is_dir($uploadPath)) {
+            $this->respondJson(500, ['error' => '이미지를 저장할 수 없습니다.']);
+            return;
+        }
+
+        try {
+            $randomName = bin2hex(random_bytes(16));
+        } catch (\Exception $exception) {
+            $this->respondJson(500, ['error' => '이미지 파일 이름을 생성할 수 없습니다.']);
+            return;
+        }
+
+        $filename = sprintf('blog_%s.%s', $randomName, $allowedMimeTypes[$mimeType]);
+        $destination = $uploadPath . '/' . $filename;
+
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
+            $this->respondJson(500, ['error' => '이미지 업로드에 실패했습니다.']);
+            return;
+        }
+
+        $imageUrl = $uploadDir . '/' . $filename;
+        $this->respondJson(201, ['url' => $imageUrl]);
+    }
+
+    private function respondJson(int $status, array $payload): void
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     }
 }
