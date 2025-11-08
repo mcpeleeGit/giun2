@@ -165,18 +165,12 @@
                 <?php
             };
             ?>
-            <div class="calendar-grid">
-                <?php if (!empty($normalizedMonths['current'])): ?>
-                    <div class="calendar-grid__main">
-                        <?php $renderCalendarMonth($normalizedMonths['current']); ?>
-                    </div>
-                <?php endif; ?>
-                <?php if (!empty($normalizedMonths['previous']) || !empty($normalizedMonths['next'])): ?>
-                    <div class="calendar-grid__sidebar">
-                        <?php $renderCalendarMonth($normalizedMonths['previous']); ?>
-                        <?php $renderCalendarMonth($normalizedMonths['next']); ?>
-                    </div>
-                <?php endif; ?>
+            <div class="calendar-stack">
+                <?php foreach (['previous', 'current', 'next'] as $position): ?>
+                    <?php if (!empty($normalizedMonths[$position])): ?>
+                        <?php $renderCalendarMonth($normalizedMonths[$position]); ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </div>
             <?php if (!empty($calendarLegend ?? [])): ?>
                 <div class="calendar-legend">
