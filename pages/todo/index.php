@@ -62,13 +62,31 @@
 </section>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        function closeAllEditForms() {
+            document.querySelectorAll('.todo-edit-form').forEach(function (openForm) {
+                if (!openForm.hidden) {
+                    openForm.hidden = true;
+                    var item = openForm.closest('.todo-item');
+                    var content = item ? item.querySelector('.todo-content') : null;
+                    if (content) {
+                        content.hidden = false;
+                    }
+                }
+            });
+        }
+
         document.querySelectorAll('[data-edit-toggle]').forEach(function (button) {
             button.addEventListener('click', function () {
                 var target = button.getAttribute('data-edit-toggle');
                 var form = document.querySelector('[data-edit-form="' + target + '"]');
+                var item = button.closest('.todo-item');
+                var content = item ? item.querySelector('.todo-content') : null;
 
-                if (form) {
+                if (form && content) {
+                    closeAllEditForms();
+                    content.hidden = true;
                     form.hidden = false;
+
                     var input = form.querySelector('input, textarea');
                     if (input) {
                         input.focus();
@@ -85,9 +103,12 @@
             button.addEventListener('click', function () {
                 var target = button.getAttribute('data-edit-cancel');
                 var form = document.querySelector('[data-edit-form="' + target + '"]');
+                var item = button.closest('.todo-item');
+                var content = item ? item.querySelector('.todo-content') : null;
 
-                if (form) {
+                if (form && content) {
                     form.hidden = true;
+                    content.hidden = false;
                 }
             });
         });
