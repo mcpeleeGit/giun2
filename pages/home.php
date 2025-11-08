@@ -126,8 +126,8 @@
                 $calendarMode = $calendarMode ?? 'community';
                 $calendarTitle = $calendarMode === 'personal' ? '나의 일정 캘린더' : '커뮤니티 일정 캘린더';
                 $calendarDescription = $calendarMode === 'personal'
-                    ? '전달부터 다음 달까지 내가 작성한 게시글과 TO-DO를 한눈에 확인하세요.'
-                    : '전달부터 다음 달까지 게시글 등록 현황을 한눈에 확인하세요.';
+                    ? '이번 달 일정을 확인하고, 버튼으로 전달과 다음 달까지 펼쳐보세요.'
+                    : '이번 달 게시글 현황을 확인하고, 버튼으로 전달과 다음 달까지 펼쳐보세요.';
                 ?>
                 <h2><?= htmlspecialchars($calendarTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
                 <p><?= htmlspecialchars($calendarDescription, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -175,11 +175,15 @@
                             <?php foreach ($calendarMonth['weeks'] as $week): ?>
                                 <tr>
                                     <?php foreach ($week as $day): ?>
+                                        <?php
+                                        $dayEntries = $day['entries'] ?? [];
+                                        $entriesToShow = array_slice($dayEntries, 0, 3);
+                                        $remainingCount = count($dayEntries) - count($entriesToShow);
+                                        ?>
                                         <td class="calendar-day <?= $day['isCurrentMonth'] ? '' : 'is-outside'; ?>">
                                             <span class="calendar-date"><?= htmlspecialchars($day['day'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <?php if (!empty($day['entries'])): ?>
+                                            <?php if (!empty($dayEntries)): ?>
                                                 <div class="calendar-entries">
-                                                    <?php $entriesToShow = array_slice($day['entries'], 0, 3); ?>
                                                     <?php foreach ($entriesToShow as $entry): ?>
                                                         <?php
                                                         $icon = $calendarIcons[$entry['type']] ?? '•';
@@ -198,9 +202,36 @@
                                                             <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
                                                         </<?= $tagName; ?>>
                                                     <?php endforeach; ?>
-                                                    <?php $remainingCount = count($day['entries']) - count($entriesToShow); ?>
                                                     <?php if ($remainingCount > 0): ?>
-                                                        <div class="calendar-entry calendar-entry--more">+<?= $remainingCount; ?> 더보기</div>
+                                                        <?php
+                                                        $overlayEntries = [];
+                                                        foreach ($dayEntries as $entry) {
+                                                            $overlayEntries[] = [
+                                                                'icon' => $calendarIcons[$entry['type']] ?? '•',
+                                                                'title' => $entry['title'] ?? '',
+                                                                'url' => $entry['url'] ?? null,
+                                                            ];
+                                                        }
+                                                        $overlayEntriesJson = htmlspecialchars(json_encode($overlayEntries, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
+                                                        $dateIso = $day['date'] ?? '';
+                                                        $dateLabel = $dateIso !== '' ? $dateIso . ' 일정' : '일정 상세';
+                                                        if ($dateIso !== '') {
+                                                            try {
+                                                                $dateObject = new \DateTimeImmutable($dateIso);
+                                                                $dateLabel = $dateObject->format('Y년 n월 j일 일정');
+                                                            } catch (\Exception $exception) {
+                                                                $dateLabel = $dateIso . ' 일정';
+                                                            }
+                                                        }
+                                                        ?>
+                                                        <button type="button"
+                                                            class="calendar-entry calendar-entry--more"
+                                                            data-calendar-more
+                                                            data-calendar-date="<?= htmlspecialchars($dateIso, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-calendar-date-label="<?= htmlspecialchars($dateLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                                            data-calendar-entries="<?= $overlayEntriesJson; ?>">
+                                                            +<?= $remainingCount; ?> 더보기
+                                                        </button>
                                                     <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
@@ -214,12 +245,29 @@
                 <?php
             };
             ?>
-            <div class="calendar-stack">
+            <div class="calendar-controls">
+                <?php if (!empty($normalizedMonths['previous'])): ?>
+                    <button type="button" class="btn btn-outline calendar-toggle" data-calendar-toggle="previous" aria-expanded="false">지난 달 펼치기</button>
+                <?php endif; ?>
+                <?php if (!empty($normalizedMonths['next'])): ?>
+                    <button type="button" class="btn btn-outline calendar-toggle" data-calendar-toggle="next" aria-expanded="false">다음 달 펼치기</button>
+                <?php endif; ?>
+            </div>
+            <div class="calendar-stack" data-calendar-stack data-show-previous="false" data-show-next="false">
                 <?php foreach (['previous', 'current', 'next'] as $position): ?>
                     <?php if (!empty($normalizedMonths[$position])): ?>
                         <?php $renderCalendarMonth($normalizedMonths[$position]); ?>
                     <?php endif; ?>
                 <?php endforeach; ?>
+            </div>
+            <div class="calendar-overlay" data-calendar-overlay hidden>
+                <div class="calendar-overlay__dialog" role="dialog" aria-modal="true" aria-labelledby="calendar-overlay-title" tabindex="-1">
+                    <div class="calendar-overlay__header">
+                        <h3 id="calendar-overlay-title" data-calendar-overlay-title>일정 상세</h3>
+                        <button type="button" class="calendar-overlay__close" data-calendar-overlay-dismiss aria-label="닫기">&times;</button>
+                    </div>
+                    <ul class="calendar-overlay__list" data-calendar-overlay-list></ul>
+                </div>
             </div>
             <?php if (!empty($calendarLegend ?? [])): ?>
                 <div class="calendar-legend">
@@ -234,6 +282,138 @@
         </div>
     </div>
 </section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarStack = document.querySelector('[data-calendar-stack]');
+        if (calendarStack) {
+            if (!calendarStack.dataset.showPrevious) {
+                calendarStack.dataset.showPrevious = 'false';
+            }
+            if (!calendarStack.dataset.showNext) {
+                calendarStack.dataset.showNext = 'false';
+            }
+
+            var labelMap = {
+                previous: { expand: '지난 달 펼치기', collapse: '지난 달 접기' },
+                next: { expand: '다음 달 펼치기', collapse: '다음 달 접기' }
+            };
+
+            document.querySelectorAll('[data-calendar-toggle]').forEach(function (button) {
+                var position = button.getAttribute('data-calendar-toggle');
+                if (!position || !labelMap[position]) {
+                    return;
+                }
+
+                var dataKey = position === 'previous' ? 'showPrevious' : 'showNext';
+
+                var updateButton = function () {
+                    var isExpanded = calendarStack.dataset[dataKey] === 'true';
+                    button.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+                    button.textContent = isExpanded ? labelMap[position].collapse : labelMap[position].expand;
+                };
+
+                updateButton();
+
+                button.addEventListener('click', function () {
+                    var isExpanded = calendarStack.dataset[dataKey] === 'true';
+                    calendarStack.dataset[dataKey] = isExpanded ? 'false' : 'true';
+                    updateButton();
+                });
+            });
+        }
+
+        var calendarOverlay = document.querySelector('[data-calendar-overlay]');
+        if (!calendarOverlay) {
+            return;
+        }
+
+        var overlayDialog = calendarOverlay.querySelector('.calendar-overlay__dialog');
+        var overlayTitle = calendarOverlay.querySelector('[data-calendar-overlay-title]');
+        var overlayList = calendarOverlay.querySelector('[data-calendar-overlay-list]');
+        var activeTrigger = null;
+
+        var handleKeyDown = function (event) {
+            if (event.key === 'Escape') {
+                closeOverlay();
+            }
+        };
+
+        var closeOverlay = function () {
+            calendarOverlay.hidden = true;
+            calendarOverlay.removeAttribute('data-open');
+            document.removeEventListener('keydown', handleKeyDown);
+            if (activeTrigger) {
+                activeTrigger.focus();
+                activeTrigger = null;
+            }
+        };
+
+        var openOverlay = function (trigger, dateLabel, entries) {
+            overlayList.innerHTML = '';
+
+            if (Array.isArray(entries) && entries.length > 0) {
+                entries.forEach(function (entry) {
+                    var item = document.createElement('li');
+                    item.className = 'calendar-overlay__item';
+
+                    var icon = document.createElement('span');
+                    icon.className = 'calendar-entry-icon calendar-overlay__icon';
+                    icon.textContent = entry.icon || '•';
+
+                    var titleElement;
+                    if (entry.url) {
+                        titleElement = document.createElement('a');
+                        titleElement.href = entry.url;
+                        titleElement.className = 'calendar-overlay__link';
+                    } else {
+                        titleElement = document.createElement('span');
+                        titleElement.className = 'calendar-overlay__text';
+                    }
+
+                    titleElement.textContent = entry.title || '제목 없는 일정';
+
+                    item.appendChild(icon);
+                    item.appendChild(titleElement);
+                    overlayList.appendChild(item);
+                });
+            } else {
+                var emptyItem = document.createElement('li');
+                emptyItem.className = 'calendar-overlay__item calendar-overlay__item--empty';
+                emptyItem.textContent = '표시할 일정이 없습니다.';
+                overlayList.appendChild(emptyItem);
+            }
+
+            overlayTitle.textContent = dateLabel || '일정 상세';
+            calendarOverlay.hidden = false;
+            calendarOverlay.setAttribute('data-open', 'true');
+            activeTrigger = trigger;
+            overlayDialog.focus();
+            document.addEventListener('keydown', handleKeyDown);
+        };
+
+        document.addEventListener('click', function (event) {
+            var moreButton = event.target.closest('[data-calendar-more]');
+            if (moreButton) {
+                event.preventDefault();
+                var entriesData = moreButton.getAttribute('data-calendar-entries') || '[]';
+                var parsedEntries;
+                try {
+                    parsedEntries = JSON.parse(entriesData);
+                } catch (error) {
+                    parsedEntries = [];
+                }
+                var dateLabel = moreButton.getAttribute('data-calendar-date-label') || '일정 상세';
+                openOverlay(moreButton, dateLabel, Array.isArray(parsedEntries) ? parsedEntries : []);
+            }
+        });
+
+        calendarOverlay.addEventListener('click', function (event) {
+            if (event.target.hasAttribute('data-calendar-overlay-dismiss') || event.target === calendarOverlay) {
+                closeOverlay();
+            }
+        });
+    });
+</script>
 <?php endif; ?>
 
 <section class="section section--muted">
