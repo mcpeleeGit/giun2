@@ -52,7 +52,8 @@
                         </div>
                         <div class="workout-actions">
                             <button type="submit" class="btn btn-primary">운동 루틴 저장</button>
-                            <p class="workout-hint">빈 칸으로 두면 해당 요일의 루틴이 삭제됩니다.</p>
+                            <button type="submit" class="btn btn-outline" formaction="/workout-routines/todos">주간 운동 To-Do 저장</button>
+                            <p class="workout-hint">빈 칸으로 두면 해당 요일의 루틴이 삭제됩니다. To-Do 저장 버튼을 누르면 입력한 루틴이 TO-DO 리스트에 추가됩니다.</p>
                         </div>
                     </form>
                 </div>

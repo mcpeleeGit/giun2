@@ -27,6 +27,7 @@ Router::post('/todo/{id}/toggle', [TodoController::class, 'toggle']);
 Router::post('/todo/{id}/delete', [TodoController::class, 'delete']);
 
 Router::post('/workout-routines', [WorkoutRoutineController::class, 'save']);
+Router::post('/workout-routines/todos', [WorkoutRoutineController::class, 'saveToTodos']);
 
 Router::get('/gallery', [GalleryController::class, 'index']);
 Router::post('/gallery', [GalleryController::class, 'store']);
