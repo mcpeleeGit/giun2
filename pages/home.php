@@ -416,27 +416,67 @@
 </script>
 <?php endif; ?>
 
+<?php $homeGalleryItems = $homeGalleryItems ?? []; ?>
 <section class="section section--muted">
     <div class="container">
         <div class="surface-card">
-            <div class="section-header">
-                <h2>MyLife Hub의 핵심 메뉴</h2>
-                <p>일정 관리, 커뮤니티 소통, 계정 관리까지 개인 홈페이지에서 모두 해결하세요.</p>
-            </div>
-            <div class="feature-grid">
-                <article class="card">
-                    <h3>TO-DO 리스트</h3>
-                    <p>할 일을 추가하고 완료 표시까지! 오늘 해야 할 일을 깔끔하게 관리해 보세요.</p>
-                </article>
-                <article class="card">
-                    <h3>회원 게시판 &amp; 갤러리</h3>
-                    <p>커뮤니티 게시판과 갤러리에서 일상의 이야기와 사진을 함께 나눌 수 있습니다.</p>
-                </article>
-                <article class="card">
-                    <h3>나의 블로그 &amp; 마이페이지</h3>
-                    <p>나만 볼 수 있는 블로그와 마이페이지에서 오늘의 기록과 활동 현황을 되돌아보세요.</p>
-                </article>
-            </div>
+            <?php if (empty($currentUser)): ?>
+                <div class="section-header">
+                    <h2>MyLife Hub의 핵심 메뉴</h2>
+                    <p>일정 관리, 커뮤니티 소통, 계정 관리까지 개인 홈페이지에서 모두 해결하세요.</p>
+                </div>
+                <div class="feature-grid">
+                    <article class="card">
+                        <h3>TO-DO 리스트</h3>
+                        <p>할 일을 추가하고 완료 표시까지! 오늘 해야 할 일을 깔끔하게 관리해 보세요.</p>
+                    </article>
+                    <article class="card">
+                        <h3>회원 게시판 &amp; 갤러리</h3>
+                        <p>커뮤니티 게시판과 갤러리에서 일상의 이야기와 사진을 함께 나눌 수 있습니다.</p>
+                    </article>
+                    <article class="card">
+                        <h3>나의 블로그 &amp; 마이페이지</h3>
+                        <p>나만 볼 수 있는 블로그와 마이페이지에서 오늘의 기록과 활동 현황을 되돌아보세요.</p>
+                    </article>
+                </div>
+            <?php else: ?>
+                <div class="section-header">
+                    <h2>갤러리 하이라이트</h2>
+                    <p>로그인한 회원을 위한 최신 커뮤니티 작품을 둘러보세요.</p>
+                </div>
+                <?php if (!empty($homeGalleryItems)): ?>
+                    <div class="home-gallery">
+                        <?php foreach ($homeGalleryItems as $item): ?>
+                            <?php
+                            $itemId = (int)($item->id ?? 0);
+                            $itemTitle = $item->title ?? '갤러리 항목';
+                            $itemDescription = $item->description ?? '';
+                            if (function_exists('mb_strimwidth')) {
+                                $itemExcerpt = mb_strimwidth($itemDescription, 0, 90, '…', 'UTF-8');
+                            } else {
+                                $itemExcerpt = strlen($itemDescription) > 90 ? substr($itemDescription, 0, 90) . '…' : $itemDescription;
+                            }
+                            ?>
+                            <article class="home-gallery__item">
+                                <a class="home-gallery__thumb" href="/gallery/<?= $itemId; ?>" aria-label="<?= htmlspecialchars($itemTitle . ' 상세 보기', ENT_QUOTES, 'UTF-8'); ?>">
+                                    <img src="<?= htmlspecialchars($item->image_path ?? '', ENT_QUOTES, 'UTF-8'); ?>" alt="<?= htmlspecialchars($itemTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                                </a>
+                                <div class="home-gallery__body">
+                                    <h3 class="home-gallery__title"><?= htmlspecialchars($itemTitle, ENT_QUOTES, 'UTF-8'); ?></h3>
+                                    <?php if ($itemExcerpt !== ''): ?>
+                                        <p class="home-gallery__excerpt"><?= htmlspecialchars($itemExcerpt, ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="home-gallery__more">
+                        <a class="btn btn-ghost" href="/gallery">갤러리 전체 보기</a>
+                    </div>
+                <?php else: ?>
+                    <p class="message message-info">아직 등록된 갤러리 작품이 없습니다. 첫 번째 작품을 공유해 보세요!</p>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
 </section>
