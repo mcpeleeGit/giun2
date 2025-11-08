@@ -27,6 +27,8 @@ class HomeController {
         $currentUser = current_user();
         $calendarData = $this->prepareCalendarData($currentUser);
 
+        $workoutWeekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+
         view('home', [
             'currentUser' => $currentUser,
             'recentPosts' => $this->boardService->getRecentPosts(3),
@@ -36,13 +38,31 @@ class HomeController {
             'workoutMessage' => flash('workout_message'),
             'workoutError' => flash('workout_error'),
             'workoutRoutines' => $currentUser ? $this->workoutRoutineService->getRoutineMapForUser($currentUser->id) : [],
-            'workoutWeekdays' => ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'],
+            'workoutWeekdays' => $workoutWeekdays,
+            'workoutTodayIndex' => $this->resolveWorkoutTodayIndex(),
             'calendarMonths' => $calendarData['months'],
             'calendarIcons' => $calendarData['icons'],
             'calendarWeekdays' => $calendarData['weekdayLabels'],
             'calendarLegend' => $calendarData['legend'],
             'calendarMode' => $calendarData['mode'],
         ]);
+    }
+
+    private function resolveWorkoutTodayIndex(): int
+    {
+        $weekdayNumber = (int)(new \DateTimeImmutable('now'))->format('w');
+
+        $mapping = [
+            1 => 0, // 월요일
+            2 => 1,
+            3 => 2,
+            4 => 3,
+            5 => 4,
+            6 => 5,
+            0 => 6, // 일요일
+        ];
+
+        return $mapping[$weekdayNumber] ?? 0;
     }
 
     private function prepareCalendarData($currentUser): array
