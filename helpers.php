@@ -47,23 +47,28 @@ function flash(string $key, ?string $value = null): ?string {
 function view($name, $data = []) {
     extract($data);
     $seo = getSeo($data['seo'] ?? null);
-    
+
     // index.php가 있는 디렉토리를 기준으로 경로 계산
     // index.php에서 helpers.php를 로드하므로, index.php의 위치를 기준으로 함
     $scriptDir = dirname($_SERVER['SCRIPT_FILENAME'] ?? __FILE__);
     $baseDir = $scriptDir;
-    
+
     $header = $baseDir . '/layouts/header.php';
     $footer = $baseDir . '/layouts/footer.php';
     $viewPath = $baseDir . "/pages/{$name}.php";
     $errorView = $baseDir . '/pages/errors/404.php';
 
+    $viewExists = is_file($viewPath);
+
+    if (!$viewExists) {
+        http_response_code(404);
+    }
+
     include $header;
 
-    if (is_file($viewPath)) {
+    if ($viewExists) {
         include $viewPath;
     } else {
-        http_response_code(404);
         if (is_file($errorView)) {
             include $errorView;
         } else {
@@ -82,12 +87,17 @@ function adminView($name, $data = []) {
     $viewPath = $baseDir . "/pages/admin/{$name}.php";
     $errorView = $baseDir . '/pages/errors/404.php';
 
+    $viewExists = is_file($viewPath);
+
+    if (!$viewExists) {
+        http_response_code(404);
+    }
+
     include $header;
 
-    if (is_file($viewPath)) {
+    if ($viewExists) {
         include $viewPath;
     } else {
-        http_response_code(404);
         if (is_file($errorView)) {
             include $errorView;
         } else {

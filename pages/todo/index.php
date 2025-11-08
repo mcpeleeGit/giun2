@@ -33,12 +33,54 @@
                                         <div class="todo-meta">작성일 <?= date('Y.m.d H:i', strtotime($todo->created_at)); ?></div>
                                     </div>
                                     <div class="todo-actions">
-                                        <button type="button" class="link-button" data-edit-toggle="<?= $editTarget; ?>">수정</button>
+                                        <button
+                                            type="button"
+                                            class="link-button todo-action-button"
+                                            data-edit-toggle="<?= $editTarget; ?>"
+                                            aria-label="수정"
+                                        >
+                                            <span class="todo-action-icon" aria-hidden="true">
+                                                <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12.59 4.58L15.42 7.41L6.83 16H4V13.17L12.59 4.58Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </span>
+                                            <span class="todo-action-label">수정</span>
+                                        </button>
                                         <form method="POST" action="/todo/<?= $todo->id; ?>/toggle">
-                                            <button type="submit" class="link-button"><?= $todo->is_completed ? '되돌리기' : '완료하기'; ?></button>
+                                            <?php
+                                            $isCompleted = (bool) $todo->is_completed;
+                                            $toggleLabel = $isCompleted ? '되돌리기' : '완료하기';
+                                            ?>
+                                            <button type="submit" class="link-button todo-action-button" aria-label="<?= $toggleLabel; ?>">
+                                                <span class="todo-action-icon" aria-hidden="true">
+                                                    <?php if ($isCompleted): ?>
+                                                        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M5 8V4.5C5 4.22 5.22 4 5.5 4H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            <path d="M5 4L3 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            <path d="M4.8 11.5C5.62988 13.8705 7.85014 15.5 10.5 15.5C13.8137 15.5 16.5 12.8137 16.5 9.5C16.5 6.18629 13.8137 3.5 10.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    <?php else: ?>
+                                                        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M5 10L8.25 13.25L15 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                    <?php endif; ?>
+                                                </span>
+                                                <span class="todo-action-label"><?= $toggleLabel; ?></span>
+                                            </button>
                                         </form>
                                         <form method="POST" action="/todo/<?= $todo->id; ?>/delete" onsubmit="return confirm('정말 삭제하시겠어요?');">
-                                            <button type="submit" class="link-button danger">삭제</button>
+                                            <button type="submit" class="link-button todo-action-button danger" aria-label="삭제">
+                                                <span class="todo-action-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M4 6H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M8 6V4H12V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M15 6V15C15 15.55 14.55 16 14 16H6C5.45 16 5 15.55 5 15V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M8.5 9V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M11.5 9V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </span>
+                                                <span class="todo-action-label">삭제</span>
+                                            </button>
                                         </form>
                                     </div>
                                 </div>
