@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Services\BlogService;
 use App\Services\BoardService;
+use App\Services\GalleryService;
 use App\Services\TodoService;
 use App\Services\WorkoutRoutineService;
 use function current_user;
@@ -14,6 +15,7 @@ class HomeController {
     private $todoService;
     private $blogService;
     private $workoutRoutineService;
+    private $galleryService;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class HomeController {
         $this->todoService = new TodoService();
         $this->blogService = new BlogService();
         $this->workoutRoutineService = new WorkoutRoutineService();
+        $this->galleryService = new GalleryService();
     }
 
     public function home() {
@@ -28,6 +31,8 @@ class HomeController {
         $calendarData = $this->prepareCalendarData($currentUser);
 
         $workoutWeekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+
+        $galleryItems = $this->galleryService->getAll();
 
         view('home', [
             'currentUser' => $currentUser,
@@ -45,6 +50,7 @@ class HomeController {
             'calendarWeekdays' => $calendarData['weekdayLabels'],
             'calendarLegend' => $calendarData['legend'],
             'calendarMode' => $calendarData['mode'],
+            'homeGalleryItems' => array_slice($galleryItems, 0, 6),
         ]);
     }
 
