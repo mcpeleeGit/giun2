@@ -456,14 +456,34 @@ a:hover {
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.5rem;
-    align-items: stretch;
 }
 
-@media (min-width: 992px) {
+.calendar-grid__sidebar {
+    display: grid;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
     .calendar-grid {
-        grid-template-columns: minmax(200px, 0.85fr) minmax(280px, 1.3fr) minmax(200px, 0.85fr);
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+        grid-auto-rows: minmax(0, 1fr);
+        align-items: stretch;
+    }
+
+    .calendar-grid__main {
+        grid-row: 1 / span 2;
+        height: 100%;
+        display: flex;
+    }
+
+    .calendar-grid__main > .calendar-month,
+    .calendar-grid__sidebar > .calendar-month {
+        height: 100%;
+    }
+
+    .calendar-grid__sidebar {
+        grid-auto-rows: minmax(0, 1fr);
     }
 }
 
