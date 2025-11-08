@@ -41,10 +41,23 @@
 
                     <form method="POST" action="/workout-routines" class="workout-form">
                         <?= csrf_field(); ?>
-                        <div class="workout-grid">
+                        <?php
+                        $workoutTodayIndex = isset($workoutTodayIndex) ? (int)$workoutTodayIndex : 0;
+                        $workoutTodayLabel = $workoutWeekdays[$workoutTodayIndex] ?? ($workoutWeekdays[0] ?? '');
+                        ?>
+                        <div class="workout-mobile-controls">
+                            <?php if ($workoutTodayLabel !== ''): ?>
+                                <span class="workout-mobile-label">오늘은 <?= htmlspecialchars($workoutTodayLabel, ENT_QUOTES, 'UTF-8'); ?> 루틴부터 확인해 보세요.</span>
+                            <?php endif; ?>
+                            <button type="button" class="btn btn-ghost workout-toggle" data-workout-toggle aria-expanded="false">모든 요일 펼치기</button>
+                        </div>
+                        <div class="workout-grid" data-workout-grid data-expanded="false" data-today-index="<?= (int)$workoutTodayIndex; ?>">
                             <?php foreach ($workoutWeekdays as $index => $weekday): ?>
-                                <?php $routineValue = $workoutRoutines[$index] ?? ''; ?>
-                                <div class="workout-day">
+                                <?php
+                                $routineValue = $workoutRoutines[$index] ?? '';
+                                $dayClasses = 'workout-day' . ((int)$index === $workoutTodayIndex ? ' is-today' : '');
+                                ?>
+                                <div class="<?= $dayClasses; ?>" data-day-index="<?= (int)$index; ?>">
                                     <label class="workout-day__label" for="workout-<?= $index; ?>"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></label>
                                     <textarea id="workout-<?= $index; ?>" name="routines[<?= $index; ?>]" rows="4" placeholder="예: 상체 근력 + 스트레칭"><?= htmlspecialchars($routineValue, ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 </div>
@@ -56,6 +69,41 @@
                             <p class="workout-hint">빈 칸으로 두면 해당 요일의 루틴이 삭제됩니다. To-Do 저장 버튼을 누르면 입력한 루틴이 TO-DO 리스트에 추가됩니다.</p>
                         </div>
                     </form>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var workoutGrid = document.querySelector('[data-workout-grid]');
+                            if (!workoutGrid) {
+                                return;
+                            }
+
+                            var toggleButton = document.querySelector('[data-workout-toggle]');
+                            var todayIndex = parseInt(workoutGrid.getAttribute('data-today-index') || '0', 10);
+
+                            workoutGrid.querySelectorAll('[data-day-index]').forEach(function (dayElement) {
+                                var dayIndex = parseInt(dayElement.getAttribute('data-day-index') || '-1', 10);
+                                if (dayIndex === todayIndex) {
+                                    dayElement.classList.add('is-today');
+                                }
+                            });
+
+                            if (!toggleButton) {
+                                return;
+                            }
+
+                            var updateState = function (expanded) {
+                                workoutGrid.setAttribute('data-expanded', expanded ? 'true' : 'false');
+                                toggleButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                                toggleButton.textContent = expanded ? '요일 접기' : '모든 요일 펼치기';
+                            };
+
+                            updateState(false);
+
+                            toggleButton.addEventListener('click', function () {
+                                var isExpanded = workoutGrid.getAttribute('data-expanded') === 'true';
+                                updateState(!isExpanded);
+                            });
+                        });
+                    </script>
                 </div>
             </div>
         <?php else: ?>

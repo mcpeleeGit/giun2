@@ -398,10 +398,23 @@ a:hover {
     gap: 1.5rem;
 }
 
+
+.workout-mobile-controls {
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.workout-mobile-label {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
 .workout-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
 }
 
 .workout-day {
@@ -428,6 +441,11 @@ a:hover {
     background: rgba(255, 255, 255, 0.9);
 }
 
+.workout-day.is-today {
+    border: 1px solid rgba(79, 70, 229, 0.45);
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.12);
+}
+
 .workout-day textarea:focus {
     outline: none;
     border-color: rgba(79, 70, 229, 0.45);
@@ -445,6 +463,30 @@ a:hover {
     margin: 0;
     color: var(--color-muted);
     font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+    .workout-mobile-controls {
+        display: flex;
+    }
+
+    .workout-grid[data-expanded="false"] .workout-day {
+        display: none;
+    }
+
+    .workout-grid[data-expanded="false"] .workout-day.is-today {
+        display: flex;
+    }
+}
+
+@media (min-width: 768px) {
+    .workout-grid {
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+    }
+
+    .workout-mobile-controls {
+        display: none;
+    }
 }
 
 .stats-grid {
