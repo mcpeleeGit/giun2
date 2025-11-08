@@ -5,6 +5,9 @@ use App\Services\BlogService;
 use App\Services\BoardService;
 use App\Services\TodoService;
 use App\Services\WorkoutRoutineService;
+use function current_user;
+use function flash;
+use function view;
 
 class HomeController {
     private $boardService;
