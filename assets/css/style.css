@@ -86,6 +86,73 @@ a:hover {
     backdrop-filter: blur(6px);
 }
 
+.nav-panel {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.nav-toggle:hover,
+.nav-toggle:focus-visible {
+    background: rgba(79, 70, 229, 0.12);
+    outline: none;
+}
+
+.nav-toggle__bar {
+    position: relative;
+    display: block;
+    width: 1.5rem;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.nav-toggle__bar::before,
+.nav-toggle__bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-text);
+    border-radius: 999px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.nav-toggle__bar::before {
+    top: -6px;
+}
+
+.nav-toggle__bar::after {
+    top: 6px;
+}
+
+.nav-toggle.is-active .nav-toggle__bar {
+    background: transparent;
+}
+
+.nav-toggle.is-active .nav-toggle__bar::before {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.nav-toggle.is-active .nav-toggle__bar::after {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
 .nav-link {
     padding: 0.45rem 0.85rem;
     border-radius: 999px;
@@ -890,24 +957,71 @@ a:hover {
 
 @media (max-width: 768px) {
     .nav-container {
-        flex-direction: column;
-        align-items: flex-start;
         gap: 1rem;
+        align-items: center;
+    }
+
+    .nav-toggle {
+        display: inline-flex;
+    }
+
+    .nav-panel {
+        display: none;
+        flex-basis: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        background: var(--color-surface);
+        border-radius: 1rem;
+        padding: 1rem;
+        box-shadow: 0 20px 35px rgba(15, 23, 42, 0.08);
+        border: 1px solid rgba(15, 23, 42, 0.05);
+    }
+
+    .nav-panel.is-open {
+        display: flex;
     }
 
     .site-nav {
         width: 100%;
-        justify-content: space-between;
-        flex-wrap: wrap;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+        padding: 0;
+        background: transparent;
+        border-radius: 0.75rem;
+        backdrop-filter: none;
     }
 
-    .hero-highlights {
-        padding: 1.25rem;
+    .nav-link {
+        width: 100%;
+        border-radius: 0.75rem;
     }
 
     .nav-actions {
         width: 100%;
-        justify-content: space-between;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .nav-actions .welcome {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-actions .btn,
+    .nav-actions .link {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-actions .link {
+        display: block;
+    }
+
+    .hero-highlights {
+        padding: 1.25rem;
     }
 
     .todo-item {
