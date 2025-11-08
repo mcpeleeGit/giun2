@@ -46,7 +46,7 @@
                                 <?php $routineValue = $workoutRoutines[$index] ?? ''; ?>
                                 <div class="workout-day">
                                     <label class="workout-day__label" for="workout-<?= $index; ?>"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></label>
-                                    <textarea id="workout-<?= $index; ?>" name="routines[<?= $index; ?>]" rows="2" placeholder="예: 상체 근력 + 스트레칭"><?= htmlspecialchars($routineValue, ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                    <textarea id="workout-<?= $index; ?>" name="routines[<?= $index; ?>]" rows="4" placeholder="예: 상체 근력 + 스트레칭"><?= htmlspecialchars($routineValue, ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 </div>
                             <?php endforeach; ?>
                         </div>

@@ -344,7 +344,6 @@ a:hover {
     padding: 1rem;
     border-radius: 1rem;
     background: rgba(79, 70, 229, 0.06);
-    border: 1px solid rgba(79, 70, 229, 0.08);
 }
 
 .workout-day__label {
@@ -354,7 +353,7 @@ a:hover {
 
 .workout-day textarea {
     resize: vertical;
-    min-height: 70px;
+    min-height: 120px;
     border-radius: 0.75rem;
     border: 1px solid rgba(15, 23, 42, 0.12);
     padding: 0.65rem 0.85rem;
