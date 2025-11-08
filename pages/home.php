@@ -83,71 +83,100 @@
                 <h2><?= htmlspecialchars($calendarTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
                 <p><?= htmlspecialchars($calendarDescription, ENT_QUOTES, 'UTF-8'); ?></p>
             </div>
-            <div class="calendar-grid">
-                <?php foreach ($calendarMonths as $calendarMonth): ?>
-                    <?php
-                    $position = $calendarMonth['position'] ?? 'adjacent';
-                    $validPositions = ['previous', 'current', 'next'];
-                    if (!in_array($position, $validPositions, true)) {
-                        $position = 'previous';
-                    }
-                    $monthClasses = ['calendar-month', 'calendar-month--' . $position];
-                    $monthClassAttribute = htmlspecialchars(implode(' ', $monthClasses), ENT_QUOTES, 'UTF-8');
-                    $isCurrentMonth = !empty($calendarMonth['isCurrent']);
-                    ?>
-                    <div class="<?= $monthClassAttribute; ?>"<?= $isCurrentMonth ? ' aria-current="date"' : ''; ?>>
-                        <header class="calendar-month__header">
-                            <h3><?= htmlspecialchars($calendarMonth['label'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                        </header>
-                        <table class="calendar-table">
-                            <thead>
+            <?php
+            $validPositions = ['previous', 'current', 'next'];
+            $normalizedMonths = [
+                'previous' => null,
+                'current' => null,
+                'next' => null,
+            ];
+
+            foreach ($calendarMonths as $calendarMonth) {
+                $position = $calendarMonth['position'] ?? 'adjacent';
+                if (!in_array($position, $validPositions, true)) {
+                    $position = 'previous';
+                }
+                $calendarMonth['position'] = $position;
+                $normalizedMonths[$position] = $calendarMonth;
+            }
+
+            $renderCalendarMonth = static function (?array $calendarMonth) use ($calendarWeekdays, $calendarIcons) {
+                if (empty($calendarMonth)) {
+                    return;
+                }
+
+                $position = $calendarMonth['position'] ?? 'previous';
+                $monthClasses = ['calendar-month', 'calendar-month--' . $position];
+                $monthClassAttribute = htmlspecialchars(implode(' ', $monthClasses), ENT_QUOTES, 'UTF-8');
+                $isCurrentMonth = !empty($calendarMonth['isCurrent']);
+                ?>
+                <div class="<?= $monthClassAttribute; ?>"<?= $isCurrentMonth ? ' aria-current="date"' : ''; ?>>
+                    <header class="calendar-month__header">
+                        <h3><?= htmlspecialchars($calendarMonth['label'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                    </header>
+                    <table class="calendar-table">
+                        <thead>
+                            <tr>
+                                <?php foreach ($calendarWeekdays as $weekday): ?>
+                                    <th scope="col"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></th>
+                                <?php endforeach; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($calendarMonth['weeks'] as $week): ?>
                                 <tr>
-                                    <?php foreach ($calendarWeekdays as $weekday): ?>
-                                        <th scope="col"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></th>
+                                    <?php foreach ($week as $day): ?>
+                                        <td class="calendar-day <?= $day['isCurrentMonth'] ? '' : 'is-outside'; ?>">
+                                            <span class="calendar-date"><?= htmlspecialchars($day['day'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php if (!empty($day['entries'])): ?>
+                                                <div class="calendar-entries">
+                                                    <?php $entriesToShow = array_slice($day['entries'], 0, 3); ?>
+                                                    <?php foreach ($entriesToShow as $entry): ?>
+                                                        <?php
+                                                        $icon = $calendarIcons[$entry['type']] ?? '•';
+                                                        $title = $entry['title'] ?? '';
+                                                        if (function_exists('mb_strimwidth')) {
+                                                            $title = mb_strimwidth($title, 0, 24, '…', 'UTF-8');
+                                                        } else {
+                                                            $title = strlen($title) > 24 ? substr($title, 0, 24) . '…' : $title;
+                                                        }
+                                                        $link = $entry['url'] ?? null;
+                                                        $tagName = $link ? 'a' : 'div';
+                                                        $hrefAttribute = $link ? ' href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '"' : '';
+                                                        ?>
+                                                        <<?= $tagName; ?> class="calendar-entry"<?= $hrefAttribute; ?>>
+                                                            <span class="calendar-entry-icon"><?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                        </<?= $tagName; ?>>
+                                                    <?php endforeach; ?>
+                                                    <?php $remainingCount = count($day['entries']) - count($entriesToShow); ?>
+                                                    <?php if ($remainingCount > 0): ?>
+                                                        <div class="calendar-entry calendar-entry--more">+<?= $remainingCount; ?> 더보기</div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
                                     <?php endforeach; ?>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($calendarMonth['weeks'] as $week): ?>
-                                    <tr>
-                                        <?php foreach ($week as $day): ?>
-                                            <td class="calendar-day <?= $day['isCurrentMonth'] ? '' : 'is-outside'; ?>">
-                                                <span class="calendar-date"><?= htmlspecialchars($day['day'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                                <?php if (!empty($day['entries'])): ?>
-                                                    <div class="calendar-entries">
-                                                        <?php $entriesToShow = array_slice($day['entries'], 0, 3); ?>
-                                                        <?php foreach ($entriesToShow as $entry): ?>
-                                                            <?php
-                                                            $icon = $calendarIcons[$entry['type']] ?? '•';
-                                                            $title = $entry['title'] ?? '';
-                                                            if (function_exists('mb_strimwidth')) {
-                                                                $title = mb_strimwidth($title, 0, 24, '…', 'UTF-8');
-                                                            } else {
-                                                                $title = strlen($title) > 24 ? substr($title, 0, 24) . '…' : $title;
-                                                            }
-                                                            $link = $entry['url'] ?? null;
-                                                            $tagName = $link ? 'a' : 'div';
-                                                            $hrefAttribute = $link ? ' href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '"' : '';
-                                                            ?>
-                                                            <<?= $tagName; ?> class="calendar-entry"<?= $hrefAttribute; ?>>
-                                                                <span class="calendar-entry-icon"><?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
-                                                                <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
-                                                            </<?= $tagName; ?>>
-                                                        <?php endforeach; ?>
-                                                        <?php $remainingCount = count($day['entries']) - count($entriesToShow); ?>
-                                                        <?php if ($remainingCount > 0): ?>
-                                                            <div class="calendar-entry calendar-entry--more">+<?= $remainingCount; ?> 더보기</div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </td>
-                                        <?php endforeach; ?>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php
+            };
+            ?>
+            <div class="calendar-grid">
+                <?php if (!empty($normalizedMonths['current'])): ?>
+                    <div class="calendar-grid__main">
+                        <?php $renderCalendarMonth($normalizedMonths['current']); ?>
                     </div>
-                <?php endforeach; ?>
+                <?php endif; ?>
+                <?php if (!empty($normalizedMonths['previous']) || !empty($normalizedMonths['next'])): ?>
+                    <div class="calendar-grid__sidebar">
+                        <?php $renderCalendarMonth($normalizedMonths['previous']); ?>
+                        <?php $renderCalendarMonth($normalizedMonths['next']); ?>
+                    </div>
+                <?php endif; ?>
             </div>
             <?php if (!empty($calendarLegend ?? [])): ?>
                 <div class="calendar-legend">
