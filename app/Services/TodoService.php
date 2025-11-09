@@ -68,6 +68,7 @@ class TodoService
         ];
 
         $createdCount = 0;
+        $now = new \DateTimeImmutable('now');
 
         foreach ($entries as $entry) {
             $dayIndex = isset($entry['day_of_week']) ? (int)$entry['day_of_week'] : null;
@@ -94,11 +95,25 @@ class TodoService
                 continue;
             }
 
-            if ($this->todoRepository->create($userId, $title)) {
+            $scheduledDate = $this->getUpcomingDateForWeekday($dayIndex, $now);
+
+            if ($this->todoRepository->create($userId, $title, $scheduledDate)) {
                 $createdCount++;
             }
         }
 
         return $createdCount;
+    }
+
+    private function getUpcomingDateForWeekday(int $targetWeekday, \DateTimeImmutable $reference): \DateTimeImmutable
+    {
+        $currentWeekday = ((int)$reference->format('N')) - 1; // Monday=0
+        $daysToAdd = ($targetWeekday - $currentWeekday + 7) % 7;
+
+        if ($daysToAdd === 0) {
+            return $reference;
+        }
+
+        return $reference->modify(sprintf('+%d days', $daysToAdd));
     }
 }

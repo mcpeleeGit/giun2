@@ -69,9 +69,18 @@ class TodoRepository extends Repository
         }, []);
     }
 
-    public function create(int $userId, string $title): bool
+    public function create(int $userId, string $title, ?\DateTimeInterface $createdAt = null): bool
     {
-        return $this->withTableRetry(function () use ($userId, $title) {
+        return $this->withTableRetry(function () use ($userId, $title, $createdAt) {
+            if ($createdAt instanceof \DateTimeInterface) {
+                $stmt = $this->pdo->prepare('INSERT INTO todos (user_id, title, is_completed, created_at) VALUES (?, ?, 0, ?)');
+                return $stmt->execute([
+                    $userId,
+                    $title,
+                    $createdAt->format('Y-m-d H:i:s'),
+                ]);
+            }
+
             $stmt = $this->pdo->prepare('INSERT INTO todos (user_id, title, is_completed, created_at) VALUES (?, ?, 0, NOW())');
             return $stmt->execute([$userId, $title]);
         }, false);
