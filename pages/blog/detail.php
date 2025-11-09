@@ -22,7 +22,7 @@ if (!$post) {
                 </dl>
             </header>
             <div class="content">
-                <?= nl2br(htmlspecialchars($post->content ?? '', ENT_QUOTES, 'UTF-8')); ?>
+                <?= render_rich_text($post->content ?? ''); ?>
             </div>
             <footer>
                 <a class="btn btn-ghost" href="/blog">목록으로 돌아가기</a>
@@ -62,6 +62,34 @@ if (!$post) {
     line-height: 1.8;
     color: #1f2937;
     margin-bottom: 2rem;
-    white-space: pre-wrap;
+}
+
+.blog-detail .content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+}
+
+.blog-detail .content th,
+.blog-detail .content td {
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.blog-detail .content thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.blog-detail .content a {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.blog-detail .content a:hover,
+.blog-detail .content a:focus {
+    text-decoration: none;
 }
 </style>

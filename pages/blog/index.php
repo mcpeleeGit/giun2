@@ -50,13 +50,7 @@ $error = $error ?? null;
                             <span class="blog-entry__meta">작성일 <?= htmlspecialchars(date('Y.m.d H:i', strtotime($post->created_at ?? 'now'))); ?></span>
                         </header>
                         <div class="blog-entry__content">
-                            <?php
-                            $rawContent = (string)($post->content ?? '');
-                            $hasMarkup = preg_match('/<\s*(?:p|br|strong|em|u|s|ul|ol|li|blockquote|pre|code|figure|figcaption|a|img|h[1-4])/i', $rawContent) === 1;
-                            echo $hasMarkup
-                                ? $rawContent
-                                : nl2br(htmlspecialchars($rawContent, ENT_QUOTES, 'UTF-8'));
-                            ?>
+                            <?= render_rich_text($post->content ?? ''); ?>
                         </div>
                         <div class="blog-entry__actions">
                             <button type="button" class="link-button" data-edit-toggle="<?= $editTarget; ?>">수정</button>
@@ -226,6 +220,35 @@ $error = $error ?? null;
     color: #374151;
     line-height: 1.7;
     word-break: break-word;
+}
+
+.blog-entry__content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.blog-entry__content th,
+.blog-entry__content td {
+    border: 1px solid #e5e7eb;
+    padding: 0.75rem;
+    text-align: left;
+    vertical-align: top;
+}
+
+.blog-entry__content thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+.blog-entry__content a {
+    color: #4f46e5;
+    text-decoration: underline;
+}
+
+.blog-entry__content a:hover,
+.blog-entry__content a:focus {
+    text-decoration: none;
 }
 
 .blog-entry__content p,
