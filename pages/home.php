@@ -58,7 +58,12 @@
                                 $dayClasses = 'workout-day' . ((int)$index === $workoutTodayIndex ? ' is-today' : '');
                                 ?>
                                 <div class="<?= $dayClasses; ?>" data-day-index="<?= (int)$index; ?>">
-                                    <label class="workout-day__label" for="workout-<?= $index; ?>"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></label>
+                                    <div class="workout-day__header">
+                                        <label class="workout-day__label" for="workout-<?= $index; ?>"><?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?></label>
+                                        <button type="button" class="workout-day__add" data-workout-add data-target="workout-<?= $index; ?>" aria-label="<?= htmlspecialchars($weekday, ENT_QUOTES, 'UTF-8'); ?> 운동 추가">
+                                            <span aria-hidden="true">+</span>
+                                        </button>
+                                    </div>
                                     <textarea id="workout-<?= $index; ?>" name="routines[<?= $index; ?>]" rows="4" placeholder="예: 상체 근력 + 스트레칭"><?= htmlspecialchars($routineValue, ENT_QUOTES, 'UTF-8'); ?></textarea>
                                 </div>
                             <?php endforeach; ?>
@@ -69,6 +74,36 @@
                             <p class="workout-hint">빈 칸으로 두면 해당 요일의 루틴이 삭제됩니다. To-Do 저장 버튼을 누르면 입력한 루틴이 TO-DO 리스트에 추가됩니다.</p>
                         </div>
                     </form>
+                    <div class="workout-popup" data-workout-popup hidden aria-hidden="true">
+                        <div class="workout-popup__overlay" data-workout-popup-overlay></div>
+                        <div class="workout-popup__dialog" role="dialog" aria-modal="true" aria-labelledby="workout-popup-title">
+                            <div class="workout-popup__header">
+                                <h3 id="workout-popup-title">운동 추가</h3>
+                                <button type="button" class="workout-popup__close" data-workout-popup-close aria-label="운동 추가 창 닫기">×</button>
+                            </div>
+                            <div class="workout-popup__body">
+                                <label class="workout-popup__field" for="workout-body-select">
+                                    <span>신체 부위</span>
+                                    <select id="workout-body-select" data-workout-body>
+                                        <option value="상체">상체</option>
+                                        <option value="하체">하체</option>
+                                        <option value="코어">코어</option>
+                                        <option value="유산소">유산소</option>
+                                        <option value="유연성">유연성</option>
+                                    </select>
+                                </label>
+                                <label class="workout-popup__field" for="workout-exercise-select">
+                                    <span>운동 종류</span>
+                                    <select id="workout-exercise-select" data-workout-exercise>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="workout-popup__actions">
+                                <button type="button" class="btn btn-outline" data-workout-popup-cancel>취소</button>
+                                <button type="button" class="btn btn-primary" data-workout-popup-apply>추가</button>
+                            </div>
+                        </div>
+                    </div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
                             var workoutGrid = document.querySelector('[data-workout-grid]');
@@ -102,6 +137,127 @@
                                 var isExpanded = workoutGrid.getAttribute('data-expanded') === 'true';
                                 updateState(!isExpanded);
                             });
+
+                            var addButtons = document.querySelectorAll('[data-workout-add]');
+                            var workoutPopup = document.querySelector('[data-workout-popup]');
+                            if (!workoutPopup || addButtons.length === 0) {
+                                return;
+                            }
+
+                            var workoutOptions = {
+                                '상체': ['푸시업', '벤치 프레스', '덤벨 컬', '렛 풀다운'],
+                                '하체': ['스쿼트', '런지', '레그 프레스', '데드리프트'],
+                                '코어': ['플랭크', '러시안 트위스트', '레그 레이즈', '마운틴 클라이머'],
+                                '유산소': ['러닝', '사이클', '줄넘기', '로잉 머신'],
+                                '유연성': ['요가 스트레칭', '필라테스', '폼롤러 마사지', '전신 스트레칭']
+                            };
+
+                            var popupOverlay = workoutPopup.querySelector('[data-workout-popup-overlay]');
+                            var popupCloseButtons = workoutPopup.querySelectorAll('[data-workout-popup-close], [data-workout-popup-cancel]');
+                            var popupApplyButton = workoutPopup.querySelector('[data-workout-popup-apply]');
+                            var bodySelect = workoutPopup.querySelector('[data-workout-body]');
+                            var exerciseSelect = workoutPopup.querySelector('[data-workout-exercise]');
+                            if (!bodySelect || !exerciseSelect) {
+                                return;
+                            }
+
+                            var activeTextarea = null;
+                            var handleKeydown;
+
+                            var populateExercises = function (bodyPart) {
+                                var exercises = workoutOptions[bodyPart] || [];
+                                exerciseSelect.innerHTML = '';
+                                exercises.forEach(function (exercise) {
+                                    var option = document.createElement('option');
+                                    option.value = exercise;
+                                    option.textContent = exercise;
+                                    exerciseSelect.appendChild(option);
+                                });
+                                if (exerciseSelect.options.length === 0) {
+                                    var placeholder = document.createElement('option');
+                                    placeholder.value = '';
+                                    placeholder.textContent = '선택 가능한 운동이 없습니다';
+                                    exerciseSelect.appendChild(placeholder);
+                                }
+                                exerciseSelect.selectedIndex = 0;
+                            };
+
+                            var openPopup = function () {
+                                workoutPopup.hidden = false;
+                                workoutPopup.setAttribute('aria-hidden', 'false');
+                                var selectedBody = bodySelect.value || bodySelect.options[0].value;
+                                bodySelect.value = selectedBody;
+                                populateExercises(selectedBody);
+                                bodySelect.focus();
+                                handleKeydown = function (event) {
+                                    if (event.key === 'Escape') {
+                                        event.preventDefault();
+                                        closePopup();
+                                    }
+                                };
+                                document.addEventListener('keydown', handleKeydown);
+                            };
+
+                            var closePopup = function () {
+                                workoutPopup.hidden = true;
+                                workoutPopup.setAttribute('aria-hidden', 'true');
+                                if (handleKeydown) {
+                                    document.removeEventListener('keydown', handleKeydown);
+                                    handleKeydown = null;
+                                }
+                                if (activeTextarea) {
+                                    activeTextarea.focus();
+                                }
+                                activeTextarea = null;
+                            };
+
+                            bodySelect.addEventListener('change', function () {
+                                populateExercises(bodySelect.value);
+                                exerciseSelect.focus();
+                            });
+
+                            addButtons.forEach(function (button) {
+                                button.addEventListener('click', function () {
+                                    var targetId = button.getAttribute('data-target');
+                                    activeTextarea = document.getElementById(targetId);
+                                    if (!activeTextarea) {
+                                        return;
+                                    }
+                                    openPopup();
+                                });
+                            });
+
+                            popupCloseButtons.forEach(function (button) {
+                                button.addEventListener('click', function () {
+                                    closePopup();
+                                });
+                            });
+
+                            if (popupOverlay) {
+                                popupOverlay.addEventListener('click', function () {
+                                    closePopup();
+                                });
+                            }
+
+                            if (popupApplyButton) {
+                                popupApplyButton.addEventListener('click', function () {
+                                    if (!activeTextarea) {
+                                        return;
+                                    }
+
+                                    var bodyPart = bodySelect.value;
+                                    var exercise = exerciseSelect.value;
+                                    if (!bodyPart || !exercise) {
+                                        return;
+                                    }
+
+                                    var newLine = bodyPart + ' - ' + exercise;
+                                    var currentValue = activeTextarea.value;
+                                    var trimmedValue = currentValue.replace(/\s+$/, '');
+                                    activeTextarea.value = trimmedValue ? trimmedValue + "\n" + newLine : newLine;
+                                    closePopup();
+                                });
+                            }
                         });
                     </script>
                 </div>
