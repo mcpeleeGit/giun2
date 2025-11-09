@@ -14,7 +14,7 @@
         <?php if (empty($currentUser)): ?>
             <div class="hero-content">
                 <span class="tag">나만의 라이프 매니저</span>
-                <h1>하루의 작은 계획부터 커뮤니티까지, MyLife Hub에서 관리하세요.</h1>
+                <h1>작은 계획부터 관리하세요.</h1>
                 <p>TO-DO 리스트로 일상을 정리하고, 회원 게시판에서 이야기를 나누며, 마이페이지에서 나만의 기록을 돌아볼 수 있는 공간입니다.</p>
                 <div class="hero-actions">
                     <a href="/register" class="btn btn-primary">회원가입으로 시작하기</a>
