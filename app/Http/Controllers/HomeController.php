@@ -128,6 +128,7 @@ class HomeController {
                 'type' => 'todo',
                 'title' => $todo->title,
                 'url' => '/todo#todo-' . $todo->id,
+                'isCompleted' => (bool)($todo->is_completed ?? false),
             ];
         }
 
