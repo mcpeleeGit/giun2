@@ -189,26 +189,43 @@ function sanitize_rich_text(string $html): string
     }
 
     $allowedTags = [
-        'p' => [],
+        'p' => ['style', 'class'],
         'br' => [],
-        'strong' => [],
-        'em' => [],
-        'u' => [],
-        's' => [],
-        'ul' => [],
-        'ol' => [],
-        'li' => [],
-        'blockquote' => [],
-        'pre' => [],
-        'code' => [],
-        'h1' => [],
-        'h2' => [],
-        'h3' => [],
-        'h4' => [],
-        'figure' => [],
-        'figcaption' => [],
-        'a' => ['href', 'title', 'target', 'rel'],
-        'img' => ['src', 'alt', 'title'],
+        'strong' => ['style', 'class'],
+        'em' => ['style', 'class'],
+        'u' => ['style', 'class'],
+        's' => ['style', 'class'],
+        'span' => ['style', 'class'],
+        'div' => ['style', 'class'],
+        'sup' => ['style', 'class'],
+        'sub' => ['style', 'class'],
+        'ul' => ['style', 'class'],
+        'ol' => ['style', 'class'],
+        'li' => ['style', 'class'],
+        'blockquote' => ['style', 'class'],
+        'pre' => ['style', 'class'],
+        'code' => ['class'],
+        'h1' => ['style', 'class'],
+        'h2' => ['style', 'class'],
+        'h3' => ['style', 'class'],
+        'h4' => ['style', 'class'],
+        'h5' => ['style', 'class'],
+        'h6' => ['style', 'class'],
+        'figure' => ['style', 'class'],
+        'figcaption' => ['style', 'class'],
+        'a' => ['href', 'title', 'target', 'rel', 'class', 'style'],
+        'img' => ['src', 'alt', 'title', 'width', 'height', 'class', 'style'],
+        'table' => ['class', 'style', 'border', 'cellpadding', 'cellspacing'],
+        'thead' => ['class', 'style'],
+        'tbody' => ['class', 'style'],
+        'tfoot' => ['class', 'style'],
+        'tr' => ['class', 'style'],
+        'th' => ['class', 'style', 'colspan', 'rowspan', 'scope'],
+        'td' => ['class', 'style', 'colspan', 'rowspan'],
+        'colgroup' => ['class', 'style', 'span'],
+        'col' => ['class', 'style', 'span'],
+        'caption' => ['class', 'style'],
+        'hr' => ['class', 'style'],
     ];
 
     $document = new \DOMDocument();
@@ -248,6 +265,18 @@ function sanitize_rich_text(string $html): string
                         continue;
                     }
 
+                    if ($attrName === 'style') {
+                        $cleanStyle = sanitize_rich_text_clean_style($value);
+
+                        if ($cleanStyle === '') {
+                            $node->removeAttribute($attrName);
+                            continue;
+                        }
+
+                        $node->setAttribute($attrName, $cleanStyle);
+                        continue;
+                    }
+
                     if ($tagName === 'a' && $attrName === 'href') {
                         if (!sanitize_rich_text_is_allowed_url($value, $allowedAnchorSchemes, true)) {
                             $node->removeAttribute($attrName);
@@ -268,6 +297,35 @@ function sanitize_rich_text(string $html): string
                             $node->removeAttribute($attrName);
                             continue;
                         }
+                    }
+
+                    if ($tagName === 'img' && in_array($attrName, ['width', 'height'], true)) {
+                        if (!preg_match('/^\d+(?:\.\d+)?(?:%)?$/', $value)) {
+                            $node->removeAttribute($attrName);
+                        }
+                        continue;
+                    }
+
+                    if (in_array($tagName, ['th', 'td'], true) && in_array($attrName, ['colspan', 'rowspan'], true)) {
+                        if (!preg_match('/^\d+$/', $value)) {
+                            $node->removeAttribute($attrName);
+                        }
+                        continue;
+                    }
+
+                    if ($tagName === 'th' && $attrName === 'scope') {
+                        $allowedScopes = ['row', 'col', 'rowgroup', 'colgroup'];
+                        if (!in_array(strtolower($value), $allowedScopes, true)) {
+                            $node->removeAttribute($attrName);
+                        }
+                        continue;
+                    }
+
+                    if ($tagName === 'table' && in_array($attrName, ['border', 'cellpadding', 'cellspacing'], true)) {
+                        if (!preg_match('/^\d+$/', $value)) {
+                            $node->removeAttribute($attrName);
+                        }
+                        continue;
                     }
                 }
             }
@@ -329,4 +387,130 @@ function sanitize_rich_text_is_allowed_url(string $url, array $allowedSchemes, b
     }
 
     return in_array(strtolower($parsed['scheme']), $allowedSchemes, true);
+}
+
+function sanitize_rich_text_clean_style(string $style): string
+{
+    $style = trim($style);
+
+    if ($style === '') {
+        return '';
+    }
+
+    $style = preg_replace('/\/\*.*?\*\//s', '', $style);
+
+    $allowedProperties = [
+        'background-color',
+        'border',
+        'border-bottom',
+        'border-bottom-color',
+        'border-bottom-style',
+        'border-bottom-width',
+        'border-collapse',
+        'border-color',
+        'border-left',
+        'border-left-color',
+        'border-left-style',
+        'border-left-width',
+        'border-radius',
+        'border-right',
+        'border-right-color',
+        'border-right-style',
+        'border-right-width',
+        'border-spacing',
+        'border-style',
+        'border-top',
+        'border-top-color',
+        'border-top-style',
+        'border-top-width',
+        'border-width',
+        'color',
+        'display',
+        'font-family',
+        'font-size',
+        'font-style',
+        'font-weight',
+        'height',
+        'letter-spacing',
+        'line-height',
+        'margin',
+        'margin-bottom',
+        'margin-left',
+        'margin-right',
+        'margin-top',
+        'max-height',
+        'max-width',
+        'min-height',
+        'min-width',
+        'padding',
+        'padding-bottom',
+        'padding-left',
+        'padding-right',
+        'padding-top',
+        'text-align',
+        'text-decoration',
+        'text-transform',
+        'vertical-align',
+        'white-space',
+        'width',
+        'word-break',
+        'word-spacing',
+    ];
+
+    $cleanRules = [];
+
+    foreach (explode(';', $style) as $rule) {
+        $rule = trim($rule);
+
+        if ($rule === '' || strpos($rule, ':') === false) {
+            continue;
+        }
+
+        [$property, $value] = array_map('trim', explode(':', $rule, 2));
+
+        $propertyLower = strtolower($property);
+
+        if (!in_array($propertyLower, $allowedProperties, true)) {
+            continue;
+        }
+
+        $valueLower = strtolower($value);
+
+        if ($valueLower === ''
+            || strpos($valueLower, 'expression') !== false
+            || strpos($valueLower, 'javascript:') !== false
+            || strpos($valueLower, 'vbscript:') !== false
+            || preg_match('/url\s*\(/i', $valueLower)) {
+            continue;
+        }
+
+        $cleanRules[] = $propertyLower . ': ' . $value;
+    }
+
+    return implode('; ', $cleanRules);
+}
+
+function render_rich_text(?string $content): string
+{
+    if (!is_string($content)) {
+        return '';
+    }
+
+    $content = trim($content);
+
+    if ($content === '') {
+        return '';
+    }
+
+    $sanitized = sanitize_rich_text($content);
+
+    if ($sanitized === '') {
+        return '';
+    }
+
+    if ($sanitized === strip_tags($sanitized)) {
+        return nl2br($sanitized);
+    }
+
+    return $sanitized;
 }
