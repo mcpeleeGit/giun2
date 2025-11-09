@@ -20,31 +20,39 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2  # 최근 2개 커밋만 가져와서 변경사항 비교
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-      - name:
-          FTP Deploy
-          # You may pin to the exact commit or the version.
-          # uses: SamKirkland/FTP-Deploy-Action@bc95d3edc3de87143284e6707ac140ce6dcbe29c
+      # FTP Deploy - 변경된 파일만 배포
+      - name: FTP Deploy
         uses: SamKirkland/FTP-Deploy-Action@4.0.0
         with:
-          # ftp server
-          server:
-            112.175.185.146
-            # ftp username
-          username:
-            giun2
-            # ftp password
-          password:
-            ${{ secrets.FTP_PASSWORD }}
-            # Server port to connect to (read your web hosts docs)
+          # FTP server
+          server: 112.175.185.146
+          # FTP username
+          username: giun2
+          # FTP password
+          password: ${{ secrets.FTP_PASSWORD }}
+          # Server port to connect to (read your web hosts docs)
           server-dir: html/
+          # 변경된 파일만 배포 (기본 동작이지만 명시적으로 설정)
+          dry-run: false
+          # 로컬 디렉토리 (기본값: .)
+          local-dir: ./
+          # 제외할 파일/디렉토리 패턴
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/.env
+            **/.env.*
+            **/config.ini
+            **/router_debug.log
+            **/.github/**
+            **/README.md
+            **/.gitignore
+            **/.htaccess
+          # 로그 레벨 (verbose로 설정하면 변경된 파일 목록 표시)
+          log-level: verbose
