@@ -195,9 +195,14 @@
                                                         }
                                                         $link = $entry['url'] ?? null;
                                                         $tagName = $link ? 'a' : 'div';
+                                                        $entryClasses = ['calendar-entry'];
+                                                        if (!empty($entry['isCompleted'])) {
+                                                            $entryClasses[] = 'calendar-entry--completed';
+                                                        }
+                                                        $classAttribute = htmlspecialchars(implode(' ', $entryClasses), ENT_QUOTES, 'UTF-8');
                                                         $hrefAttribute = $link ? ' href="' . htmlspecialchars($link, ENT_QUOTES, 'UTF-8') . '"' : '';
                                                         ?>
-                                                        <<?= $tagName; ?> class="calendar-entry"<?= $hrefAttribute; ?>>
+                                                        <<?= $tagName; ?> class="<?= $classAttribute; ?>"<?= $hrefAttribute; ?>>
                                                             <span class="calendar-entry-icon"><?= htmlspecialchars($icon, ENT_QUOTES, 'UTF-8'); ?></span>
                                                             <span class="calendar-entry-title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></span>
                                                         </<?= $tagName; ?>>
@@ -210,6 +215,7 @@
                                                                 'icon' => $calendarIcons[$entry['type']] ?? '•',
                                                                 'title' => $entry['title'] ?? '',
                                                                 'url' => $entry['url'] ?? null,
+                                                                'isCompleted' => !empty($entry['isCompleted']),
                                                             ];
                                                         }
                                                         $overlayEntriesJson = htmlspecialchars(json_encode($overlayEntries, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ENT_QUOTES, 'UTF-8');
@@ -355,6 +361,9 @@
                 entries.forEach(function (entry) {
                     var item = document.createElement('li');
                     item.className = 'calendar-overlay__item';
+                    if (entry.isCompleted) {
+                        item.classList.add('calendar-overlay__item--completed');
+                    }
 
                     var icon = document.createElement('span');
                     icon.className = 'calendar-entry-icon calendar-overlay__icon';
